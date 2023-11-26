@@ -67,7 +67,7 @@ def new_data_structs():
                                               directed=False,
                                               size=14000,
                                               cmpfunction=compares_1)
-    control["vertices"]= mp.newMap(maptype="PROBING")
+    control["vertices"]= mp.newMap(maptype="PROBING",numelements=805249)
     control["arcos"]= mp.newMap(maptype="PROBING")
     control["malla_vial_comparendos"]=  gr.newGraph(datastructure='ADJ_LIST',
                                               directed=False,
@@ -153,18 +153,22 @@ def add_comparendos(linea,control):
     dimensiones= linea["geometry"]["coordinates"]
     dime= ((dimensiones[0]),(dimensiones[1]))
     lista= mp.valueSet(control["vertices"])
+    minimo = None
     for cada in lt.iterator(lista):
         dime_2= cada["datos"]["datos"]
         distancia=haversine(dime,dime_2,unit=Unit.KILOMETERS)
-        entry = mp.get(mapa, linea["properties"]["OBJECTID"])
+        """ entry = mp.get(mapa, linea["properties"]["OBJECTID"])
         if entry is None:
             datentry = om.newMap("BST")
             mp.put(mapa,linea["properties"]["OBJECTID"], datentry)
         else:
-            datentry = me.getValue(entry)
-        om.put(datentry,distancia,cada["datos"]["id"])
+            datentry = me.getValue(entry) """
+        if minimo == None or distancia<minimo:
+            minimo = distancia
+            valor= cada['datos']['id']
+        """ om.put(datentry,distancia,cada["datos"]["id"])
     minimo= om.minKey(me.getValue(mp.get(mapa,linea["properties"]["OBJECTID"])))
-    valor= me.getValue(om.get(me.getValue(mp.get(mapa,linea["properties"]["OBJECTID"])),minimo))
+    valor= me.getValue(om.get(me.getValue(mp.get(mapa,linea["properties"]["OBJECTID"])),minimo)) """
     estruct= estructura_comparendo(linea)
     mapa_de_vertice= me.getValue(mp.get(control["vertices"],valor))["comparendos"]
     mp.put(mapa_de_vertice,valor,estruct)
