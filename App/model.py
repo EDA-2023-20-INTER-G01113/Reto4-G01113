@@ -47,7 +47,8 @@ from DISClib.Algorithms.Sorting import selectionsort as se
 from DISClib.Algorithms.Sorting import mergesort as merg
 from DISClib.Algorithms.Sorting import quicksort as quk
 assert cf
-
+from haversine import haversine, Unit
+import json
 """
 Se define la estructura de un catálogo de videos. El catálogo tendrá
 dos listas, una para los videos, otra para las categorias de los mismos.
@@ -61,11 +62,125 @@ def new_data_structs():
     Inicializa las estructuras de datos del modelo. Las crea de
     manera vacía para posteriormente almacenar la información.
     """
+    control={}
+    control["malla_vial"]=  gr.newGraph(datastructure='ADJ_LIST',
+                                              directed=False,
+                                              size=14000,
+                                              cmpfunction=compares_1)
+    control["vertices"]= mp.newMap(maptype="PROBING")
+    control["arcos"]= mp.newMap(maptype="PROBING")
+    control["malla_vial_comparendos"]=  gr.newGraph(datastructure='ADJ_LIST',
+                                              directed=False,
+                                              size=14000,
+                                              cmpfunction=compares_1)
+    control["lista_longitud"]= lt.newList("ARRAY_LIST")
+    control["lista_latitud"]=lt.newList("ARRAY_LIST")
+    control["estaciones"]= mp.newMap(maptype="PROBING")
+    control["comparendos"]= mp.newMap(maptype="PROBING")
+
+    return control
     #TODO: Inicializar las estructuras de datos
     pass
 
 
 # Funciones para agregar informacion al modelo
+def add_vertices(linea, control):
+    #añade cada vertice y a su vez crea un vertice con llave el id del vertice
+    mapa_vertices= control["vertices"]
+    elementos = linea.split(',')
+    lista= {"datos":(float(elementos[1]),float(elementos[2])),"id":elementos[0]}
+    mp.put(mapa_vertices,elementos[0],{"datos":lista,"estaciones":mp.newMap(maptype="PROBING"),"comparendos":mp.newMap(maptype="PROBING")})
+    lt.addLast(control["lista_longitud"],elementos[1])
+    lt.addLast(control["lista_latitud"],elementos[2])
+    gr.insertVertex(control["malla_vial"], elementos[0])
+    gr.insertVertex(control["malla_vial_comparendos"], elementos[0])
+
+def add_arcos(linea, control):
+    grafo= control["malla_vial"]
+    mapa_vertices= control["arcos"]  
+    elementos = linea.rstrip().split(" ")
+    lista=lt.newList("ARRAY_LIST")
+    direc_p= me.getValue(mp.get(control["vertices"],elementos[0]))["datos"]["datos"]
+    for cada in elementos:
+        if cada != elementos[0]:
+            direc_siguiente= me.getValue(mp.get(control["vertices"],cada))["datos"]["datos"] 
+            distancia=haversine(direc_p,direc_siguiente,unit=Unit.KILOMETERS)
+            gr.addEdge(grafo,elementos[0],cada,distancia)
+            lt.addLast(lista,cada)
+    mp.put(mapa_vertices,elementos[0],lista)
+
+def add_arcos_compa(linea,control):
+    grafo= control["malla_vial_comparendos"]
+    elementos = linea.rstrip().split(" ")
+    for cada in elementos:
+        if cada != elementos[0]:
+            mapa_de_vertice= me.getValue(mp.get(control["vertices"],cada))["comparendos"]
+            cantidad= mp.size(mapa_de_vertice)
+            gr.addEdge(grafo,elementos[0],cada,cantidad)
+
+    
+
+def add_estaciones(linea,control):
+    mapa= control["estaciones"]
+    dimensiones= linea["geometry"]["coordinates"]
+    dime= ((dimensiones[0]),(dimensiones[1]))
+    lista= mp.valueSet(control["vertices"])
+    for cada in lt.iterator(lista):
+        dime_2= cada["datos"]["datos"]
+        distancia=haversine(dime,dime_2,unit=Unit.KILOMETERS)
+        entry = mp.get(mapa, linea["id"])
+        if entry is None:
+            datentry = om.newMap("BST")
+            mp.put(mapa,linea["id"], datentry)
+        else:
+            datentry = me.getValue(entry)
+        om.put(datentry,distancia,cada["datos"]["id"])
+    minimo= om.minKey(me.getValue(mp.get(mapa,linea["id"])))
+    valor= me.getValue(om.get(me.getValue(mp.get(mapa,linea["id"])),minimo))
+    estruct= estructura_estacion(linea)
+    mapa_de_vertice= me.getValue(mp.get(control["vertices"],valor))["estaciones"]
+    mp.put(mapa_de_vertice,valor,estruct)
+
+def estructura_estacion(estacion):
+    control={}
+    control["type"]=estacion["type"]
+    control["id"]= estacion["id"]
+    control["geometry"]= estacion["geometry"]
+    return control
+
+def add_comparendos(linea,control):
+    mapa=control["comparendos"]
+    dimensiones= linea["geometry"]["coordinates"]
+    dime= ((dimensiones[0]),(dimensiones[1]))
+    lista= mp.valueSet(control["vertices"])
+    for cada in lt.iterator(lista):
+        dime_2= cada["datos"]["datos"]
+        distancia=haversine(dime,dime_2,unit=Unit.KILOMETERS)
+        entry = mp.get(mapa, linea["properties"]["OBJECTID"])
+        if entry is None:
+            datentry = om.newMap("BST")
+            mp.put(mapa,linea["properties"]["OBJECTID"], datentry)
+        else:
+            datentry = me.getValue(entry)
+        om.put(datentry,distancia,cada["datos"]["id"])
+    minimo= om.minKey(me.getValue(mp.get(mapa,linea["properties"]["OBJECTID"])))
+    valor= me.getValue(om.get(me.getValue(mp.get(mapa,linea["properties"]["OBJECTID"])),minimo))
+    estruct= estructura_comparendo(linea)
+    mapa_de_vertice= me.getValue(mp.get(control["vertices"],valor))["comparendos"]
+    mp.put(mapa_de_vertice,valor,estruct)
+    print(minimo)
+
+def estructura_comparendo(comparendo):
+    control={}
+    control["type"]=comparendo["type"]
+    control["properties"]={"OBJECTID":comparendo["properties"]["OBJECTID"]}
+    control["geometry"]= comparendo["geometry"]
+    return control
+
+    
+
+
+
 
 def add_data(data_structs, data):
     """
@@ -177,6 +292,17 @@ def compare(data_1, data_2):
     pass
 
 # Funciones de ordenamiento
+def compares_1(stop, keyvaluestop):
+    """
+    Compara dos estaciones
+    """
+    stopcode = keyvaluestop['key']
+    if (stop == stopcode):
+        return 0
+    elif (stop > stopcode):
+        return 1
+    else:
+        return -1
 
 
 def sort_criteria(data_1, data_2):

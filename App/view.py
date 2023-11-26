@@ -44,6 +44,8 @@ def new_controller():
     """
         Se crea una instancia del controlador
     """
+    control = controller.new_controller()
+    return control
     #TODO: Llamar la función del controlador donde se crean las estructuras de datos
     pass
 
@@ -66,6 +68,9 @@ def load_data(control):
     """
     Carga los datos
     """
+    control = controller.load_data(control)
+    print("hola")
+    return control
     #TODO: Realizar la carga de datos
     pass
 
