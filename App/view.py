@@ -27,6 +27,7 @@ from DISClib.ADT import list as lt
 from DISClib.ADT import stack as st
 from DISClib.ADT import queue as qu
 from DISClib.ADT import map as mp
+from DISClib.ADT import graph as gr
 from DISClib.DataStructures import mapentry as me
 assert cf
 from tabulate import tabulate
@@ -69,6 +70,8 @@ def load_data(control):
     Carga los datos
     """
     control = controller.load_data(control)
+    print(gr.numVertices(control["malla_vial"]))
+    print(gr.numEdges(control["malla_vial"]))
     print("hola")
     return control
     #TODO: Realizar la carga de datos

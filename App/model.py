@@ -75,8 +75,8 @@ def new_data_structs():
                                               cmpfunction=compares_1)
     control["lista_longitud"]= lt.newList("ARRAY_LIST")
     control["lista_latitud"]=lt.newList("ARRAY_LIST")
-    control["estaciones"]= mp.newMap(maptype="PROBING")
-    control["comparendos"]= mp.newMap(maptype="PROBING")
+    control["estaciones"]= lt.newList("ARRAY_LIST")
+    control["comparendos"]= lt.newList("ARRAY_LIST")
 
     return control
     #TODO: Inicializar las estructuras de datos
@@ -89,11 +89,38 @@ def add_vertices(linea, control):
     mapa_vertices= control["vertices"]
     elementos = linea.split(',')
     lista= {"datos":(float(elementos[1]),float(elementos[2])),"id":elementos[0]}
-    mp.put(mapa_vertices,elementos[0],{"datos":lista,"estaciones":mp.newMap(maptype="PROBING"),"comparendos":mp.newMap(maptype="PROBING")})
+    mp.put(mapa_vertices,elementos[0],{"datos":lista,"estaciones": lt.newList("ARRAY_LIST"),"localidades":mp.newMap(maptype="PROBING"),"cantidad":0})
     lt.addLast(control["lista_longitud"],elementos[1])
     lt.addLast(control["lista_latitud"],elementos[2])
     gr.insertVertex(control["malla_vial"], elementos[0])
     gr.insertVertex(control["malla_vial_comparendos"], elementos[0])
+
+def añadir_comparendos(linea,control):
+    id= linea["VERTICES"]
+    peso= me.getValue(mp.get(control["vertices"],id))["cantidad"]
+    peso+=1
+    comparendos= control["comparendos"]
+    lt.addLast(comparendos,linea)
+    añadir_localidades(linea,control,id)
+
+def añadir_localidades(linea,control,id):
+    mapa= me.getValue(mp.get(control["vertices"],id))["localidades"]
+    localidad= linea["LOCALIDAD"]
+    entry= mp.get(mapa,localidad)
+    if entry:
+        dataentry= me.getValue(entry)
+    else:
+        dataentry= lt.newList("ARRAY_LIST")
+        mp.put(mapa,localidad,dataentry)
+    lt.addLast(dataentry,linea)
+
+def añadir_estaciones(linea,control):
+    id= linea["VERTICES"]
+    peso= me.getValue(mp.get(control["vertices"],id))["estaciones"]
+    lt.addLast(peso,linea)
+    estaciones= control["estaciones"]
+    lt.addLast(estaciones,linea)
+
 
 def add_arcos(linea, control):
     grafo= control["malla_vial"]
@@ -114,72 +141,9 @@ def add_arcos_compa(linea,control):
     elementos = linea.rstrip().split(" ")
     for cada in elementos:
         if cada != elementos[0]:
-            mapa_de_vertice= me.getValue(mp.get(control["vertices"],cada))["comparendos"]
-            cantidad= mp.size(mapa_de_vertice)
+            cantidad= me.getValue(mp.get(control["vertices"],cada))["cantidad"]
             gr.addEdge(grafo,elementos[0],cada,cantidad)
 
-    
-
-def add_estaciones(linea,control):
-    mapa= control["estaciones"]
-    dimensiones= linea["geometry"]["coordinates"]
-    dime= ((dimensiones[0]),(dimensiones[1]))
-    lista= mp.valueSet(control["vertices"])
-    for cada in lt.iterator(lista):
-        dime_2= cada["datos"]["datos"]
-        distancia=haversine(dime,dime_2,unit=Unit.KILOMETERS)
-        entry = mp.get(mapa, linea["id"])
-        if entry is None:
-            datentry = om.newMap("BST")
-            mp.put(mapa,linea["id"], datentry)
-        else:
-            datentry = me.getValue(entry)
-        om.put(datentry,distancia,cada["datos"]["id"])
-    minimo= om.minKey(me.getValue(mp.get(mapa,linea["id"])))
-    valor= me.getValue(om.get(me.getValue(mp.get(mapa,linea["id"])),minimo))
-    estruct= estructura_estacion(linea)
-    mapa_de_vertice= me.getValue(mp.get(control["vertices"],valor))["estaciones"]
-    mp.put(mapa_de_vertice,valor,estruct)
-
-def estructura_estacion(estacion):
-    control={}
-    control["type"]=estacion["type"]
-    control["id"]= estacion["id"]
-    control["geometry"]= estacion["geometry"]
-    return control
-
-def add_comparendos(linea,control):
-    mapa=control["comparendos"]
-    dimensiones= linea["geometry"]["coordinates"]
-    dime= ((dimensiones[0]),(dimensiones[1]))
-    lista= mp.valueSet(control["vertices"])
-    minimo = None
-    for cada in lt.iterator(lista):
-        dime_2= cada["datos"]["datos"]
-        distancia=haversine(dime,dime_2,unit=Unit.KILOMETERS)
-        """ entry = mp.get(mapa, linea["properties"]["OBJECTID"])
-        if entry is None:
-            datentry = om.newMap("BST")
-            mp.put(mapa,linea["properties"]["OBJECTID"], datentry)
-        else:
-            datentry = me.getValue(entry) """
-        if minimo == None or distancia<minimo:
-            minimo = distancia
-            valor= cada['datos']['id']
-        """ om.put(datentry,distancia,cada["datos"]["id"])
-    minimo= om.minKey(me.getValue(mp.get(mapa,linea["properties"]["OBJECTID"])))
-    valor= me.getValue(om.get(me.getValue(mp.get(mapa,linea["properties"]["OBJECTID"])),minimo)) """
-    estruct= estructura_comparendo(linea)
-    mapa_de_vertice= me.getValue(mp.get(control["vertices"],valor))["comparendos"]
-    mp.put(mapa_de_vertice,valor,estruct)
-    print(minimo)
-
-def estructura_comparendo(comparendo):
-    control={}
-    control["type"]=comparendo["type"]
-    control["properties"]={"OBJECTID":comparendo["properties"]["OBJECTID"]}
-    control["geometry"]= comparendo["geometry"]
-    return control
 
     
 

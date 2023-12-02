@@ -51,23 +51,24 @@ def load_data(control):
     archivo_vertices = open(cf.data_dir + "bogota_vertices.txt","r")
     for linea in archivo_vertices:
         model.add_vertices(linea,control)
-        
-    archivos_estacion= json.load(open(cf.data_dir + "estacionpolicia.json","r"))
-    estacion= archivos_estacion["features"]
-    for cada in estacion:
-        model.add_estaciones(cada,control)
+    
+    file = "comparendos_2019_bogota_vertices.csv"
+    file_name = cf.data_dir  + file
+    input_file = csv.DictReader(open(file_name, encoding='utf-8'))
+    for comparendo in input_file:
+        model.añadir_comparendos(comparendo,control)
 
-    archivo_comparendos= json.load(open(cf.data_dir + "Comparendos_2019_Bogota_D_C.geojson","r",encoding='utf-8'))
-    hola= (archivo_comparendos["features"])
-    for cad in hola:
-        model.add_comparendos(cad,control)
+    file = "estacionpolicia_bogota_vertices.csv"
+    file_name = cf.data_dir  + file
+    input_file = csv.DictReader(open(file_name, encoding='utf-8'))
+    for estacion in input_file:
+        model.añadir_estaciones(estacion,control)
 
     archivo_arcos= open(cf.data_dir + "bogota_arcos.txt","r")
     for arco in archivo_arcos:
         if "#" not in arco:
             model.add_arcos(arco,control)
             model.add_arcos_compa(arco,control)
-
     return control
 
 
