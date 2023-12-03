@@ -69,10 +69,14 @@ def load_data(control):
         if "#" not in arco:
             model.add_arcos(arco,control)
             model.add_arcos_compa(arco,control)
+    total_comparendos=model.data_size(control["comparendos"]    )
+    comparendos= model.get_data_5(control["comparendos"],total_comparendos)
+    estaciones= model.get_data_5(control["estaciones"],model.data_size(control["estaciones"]))
     return control
 
 
 # Funciones de ordenamiento
+
 
 def sort(control):
     """

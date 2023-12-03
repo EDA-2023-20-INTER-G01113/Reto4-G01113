@@ -67,6 +67,7 @@ def new_data_structs():
                                               directed=False,
                                               size=14000,
                                               cmpfunction=compares_1)
+    control["geograficas"]= mp.newMap(maptype="PROBING",numelements=805249)
     control["vertices"]= mp.newMap(maptype="PROBING",numelements=805249)
     control["arcos"]= mp.newMap(maptype="PROBING")
     control["malla_vial_comparendos"]=  gr.newGraph(datastructure='ADJ_LIST',
@@ -86,6 +87,7 @@ def new_data_structs():
 # Funciones para agregar informacion al modelo
 def add_vertices(linea, control):
     #añade cada vertice y a su vez crea un vertice con llave el id del vertice
+    mapa_geo= control["geograficas"]
     mapa_vertices= control["vertices"]
     elementos = linea.split(',')
     lista= {"datos":(float(elementos[1]),float(elementos[2])),"id":elementos[0]}
@@ -94,6 +96,7 @@ def add_vertices(linea, control):
     lt.addLast(control["lista_latitud"],elementos[2])
     gr.insertVertex(control["malla_vial"], elementos[0])
     gr.insertVertex(control["malla_vial_comparendos"], elementos[0])
+    mp.put(mapa_geo,(float(elementos[1]),float(elementos[2])),elementos[0])
 
 def añadir_comparendos(linea,control):
     id= linea["VERTICES"]
@@ -101,7 +104,16 @@ def añadir_comparendos(linea,control):
     peso+=1
     comparendos= control["comparendos"]
     lt.addLast(comparendos,linea)
+    cada=linea["geometry"]
+    for c in cada:
+        print(c)
     añadir_localidades(linea,control,id)
+
+def formato_comparendos(linea):
+    control={}
+    control["OBJECTID"]=linea["OBJECTID"]
+    control[""]
+    return control
 
 def añadir_localidades(linea,control,id):
     mapa= me.getValue(mp.get(control["vertices"],id))["localidades"]
@@ -144,6 +156,20 @@ def add_arcos_compa(linea,control):
             cantidad= me.getValue(mp.get(control["vertices"],cada))["cantidad"]
             gr.addEdge(grafo,elementos[0],cada,cantidad)
 
+def get_data_5(data_structs,tamano):
+    """
+    Retorna un dato a partir de su ID
+    """
+    #TODO: Crear la función para obtener un dato de una lista   
+    resultados = lt.newList("ARRAY_LIST")
+    lt.addFirst(resultados,lt.firstElement(data_structs))
+    for b in range(2,6):
+        p = lt.getElement(data_structs, b)
+        lt.addLast(resultados, p)
+    for b in range (0,5):
+        p = lt.getElement(data_structs, (tamano-4+b))
+        lt.addLast(resultados, p)
+    return resultados
 
     
 
@@ -182,6 +208,7 @@ def data_size(data_structs):
     """
     Retorna el tamaño de la lista de datos
     """
+    return lt.size(data_structs)
     #TODO: Crear la función para obtener el tamaño de una lista
     pass
 

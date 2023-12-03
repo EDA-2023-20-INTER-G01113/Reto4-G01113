@@ -70,9 +70,7 @@ def load_data(control):
     Carga los datos
     """
     control = controller.load_data(control)
-    print(gr.numVertices(control["malla_vial"]))
-    print(gr.numEdges(control["malla_vial"]))
-    print("hola")
+    
     return control
     #TODO: Realizar la carga de datos
     pass
@@ -89,6 +87,7 @@ def print_req_1(control):
     """
         Función que imprime la solución del Requerimiento 1 en consola
     """
+
     # TODO: Imprimir el resultado del requerimiento 1
     pass
 
