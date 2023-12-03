@@ -62,7 +62,11 @@ def new_data_structs():
     Inicializa las estructuras de datos del modelo. Las crea de
     manera vacía para posteriormente almacenar la información.
     """
-    control={}
+    control={
+        'camino':  None,
+        }
+    
+    
     control["malla_vial"]=  gr.newGraph(datastructure='ADJ_LIST',
                                               directed=False,
                                               size=14000,
@@ -145,8 +149,6 @@ def add_arcos_compa(linea,control):
             gr.addEdge(grafo,elementos[0],cada,cantidad)
 
 
-    
-
 
 
 
@@ -170,6 +172,12 @@ def new_data(id, info):
 
 # Funciones de consulta
 
+def buscar_camino(control, estacion_inicial):
+    control['camino']= bfs.BreadhtFisrtSearch(control['malla_vial'], estacion_inicial)
+    return control
+    
+    
+
 def get_data(data_structs, id):
     """
     Retorna un dato a partir de su ID
@@ -186,12 +194,13 @@ def data_size(data_structs):
     pass
 
 
-def req_1(data_structs):
+def req_1(control, estacion_destino):
     """
     Función que soluciona el requerimiento 1
     """
-    # TODO: Realizar el requerimiento 1
-    pass
+    path = bfs.pathTo(control['camino'], estacion_destino)
+    return path
+
 
 
 def req_2(data_structs):

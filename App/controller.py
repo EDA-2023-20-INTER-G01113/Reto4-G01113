@@ -91,13 +91,15 @@ def get_data(control, id):
     #TODO: Llamar la función del modelo para obtener un dato
     pass
 
+def buscar_camino(control, estacion_inicial):
+    return model.buscar_camino(control, estacion_inicial)
 
-def req_1(control):
+def req_1(control, estacion_destino):
     """
     Retorna el resultado del requerimiento 1
     """
     # TODO: Modificar el requerimiento 1
-    pass
+    return model.req_1(control, estacion_destino)
 
 
 def req_2(control):

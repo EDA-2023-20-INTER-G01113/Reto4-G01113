@@ -62,6 +62,7 @@ def print_menu():
     print("7- Ejecutar Requerimiento 6")
     print("8- Ejecutar Requerimiento 7")
     print("9- Ejecutar Requerimiento 8")
+    print("10- Ejecutar buscar camino (antes del requerimiento 1)")
     print("0- Salir")
 
 
@@ -85,12 +86,21 @@ def print_data(control, id):
     #TODO: Realizar la función para imprimir un elemento
     pass
 
-def print_req_1(control):
+def print_req_1(control, estacion_destino):
     """
         Función que imprime la solución del Requerimiento 1 en consola
     """
-    # TODO: Imprimir el resultado del requerimiento 1
-    pass
+    path = controller.req_1(control, estacion_destino)
+    if path is not None:
+        size = st.size(path)
+        print(f'El camino tiene una longitud de: {size}')
+        while size>0:
+            elem = st.pop(path)
+            print(elem)
+            size-=1
+    else:
+        print('No hay camino')
+    
 
 
 def print_req_2(control):
@@ -148,6 +158,8 @@ def print_req_8(control):
     # TODO: Imprimir el resultado del requerimiento 8
     pass
 
+def print_buscar_camino(control, estacion_inicial):
+    r = controller.buscar_camino(control, estacion_inicial)
 
 # Se crea el controlador asociado a la vista
 control = new_controller()
@@ -166,8 +178,12 @@ if __name__ == "__main__":
             print("Cargando información de los archivos ....\n")
             data = load_data(control)
         elif int(inputs) == 2:
-            print_req_1(control)
-
+            if not control['camino']:
+                print('¡Asegúrese de correr antes la opción 10!')
+            else: 
+                estacion_destino = input("Estación destino (Ej: 15151-10): ")
+                print_req_1(control, estacion_destino)
+            
         elif int(inputs) == 3:
             print_req_2(control)
 
@@ -188,6 +204,10 @@ if __name__ == "__main__":
 
         elif int(inputs) == 9:
             print_req_8(control)
+        
+        elif int(inputs)== 10:
+            estacion_inicial = input("Ingrese el punto de partida (latitud y longitud): ")
+            print_buscar_camino(control, estacion_inicial)
 
         elif int(inputs) == 0:
             working = False
