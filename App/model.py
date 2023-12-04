@@ -78,6 +78,7 @@ def new_data_structs():
     control["lista_latitud"]=lt.newList("ARRAY_LIST")
     control["estaciones"]= lt.newList("ARRAY_LIST")
     control["comparendos"]= lt.newList("ARRAY_LIST")
+    control['comparendos_gravedad']=om.newMap(cmpfunction=compare_gravedad)
 
     return control
     #TODO: Inicializar las estructuras de datos
@@ -104,9 +105,9 @@ def añadir_comparendos(linea,control):
     peso+=1
     comparendos= control["comparendos"]
     lt.addLast(comparendos,linea)
+    tree_key = linea['TIPO_SERVICIO'],linea['INFRACCION'], linea['GlobalID']
+    om.put(control['comparendos_gravedad'], tree_key,linea)
     cada=linea["geometry"]
-    for c in cada:
-        print(c)
     añadir_localidades(linea,control,id)
 
 def formato_comparendos(linea):
@@ -253,14 +254,30 @@ def req_5(data_structs):
     pass
 
 
-def req_6(data_structs):
+def req_6(data_structs, n_comparendos, estacion):
     """
     Función que soluciona el requerimiento 6
     """
     # TODO: Realizar el requerimiento 6
-    pass
+    comparendos = lt.newList("ARRAY_LIST")
+    rutas = lt.newList("ARRAY_LIST")
+    for i in range(1,n_comparendos+1):
+        key = om.select(data_structs['comparendos_gravedad'],i)
+        k_v = om.get(data_structs['comparendos_gravedad'],key)
+        comparendo = me.getValue(k_v)
+        print(comparendo)
+        lt.addLast(comparendos, comparendo)
 
-
+    for epo in lt.iterator(data_structs['estaciones']):
+        if epo['EPODESCRIP']==estacion:
+            vert_epo = epo['VERTICES']
+    print(vert_epo)
+    routes = djk.Dijkstra(data_structs['malla_vial'],vert_epo)
+    
+    for comparendo in lt.iterator(comparendos):
+        path = djk.pathTo(routes, comparendo['VERTICES'])
+        lt.addLast(rutas, path)
+        print(rutas)
 def req_7(data_structs):
     """
     Función que soluciona el requerimiento 7
@@ -299,7 +316,36 @@ def compares_1(stop, keyvaluestop):
     else:
         return -1
 
+def compare_gravedad(comparendo, comparendo2):
+    servicio1= comparendo[0]
+    servicio2 = comparendo2[0]
+    if servicio1=='Público':
+        weight1= 3
+    elif servicio1=='Oficial':
+        weight1=2
+    else:
+        weight1= 1
+    
+    if servicio2=='Público':
+        weight2= 3
+    elif servicio2=='Oficial':
+        weight2=2
+    else:
+        weight2= 1
+    
+    if weight1>weight2:
+        return 1
+    
+    elif weight1==weight2 and comparendo[1]>comparendo2[1]:
+        return 1
+    
+    elif weight1==weight2 and comparendo[1]==comparendo2[1] and comparendo[2]>comparendo2[2]:
+        return 1
 
+    elif weight1==weight2 and comparendo[1]==comparendo2[1] and comparendo[2]==comparendo2[2]:
+        return 0
+    else:
+        return -1
 def sort_criteria(data_1, data_2):
     """sortCriteria criterio de ordenamiento para las funciones de ordenamiento
 
