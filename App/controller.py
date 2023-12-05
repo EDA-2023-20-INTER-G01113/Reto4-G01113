@@ -69,10 +69,14 @@ def load_data(control):
         if "#" not in arco:
             model.add_arcos(arco,control)
             model.add_arcos_compa(arco,control)
+    total_comparendos=model.data_size(control["comparendos"]    )
+    comparendos= model.get_data_5(control["comparendos"],total_comparendos)
+    estaciones= model.get_data_5(control["estaciones"],model.data_size(control["estaciones"]))
     return control
 
 
 # Funciones de ordenamiento
+
 
 def sort(control):
     """
@@ -91,23 +95,21 @@ def get_data(control, id):
     #TODO: Llamar la función del modelo para obtener un dato
     pass
 
-def buscar_camino(control, estacion_inicial):
-    return model.buscar_camino(control, estacion_inicial)
 
-def req_1(control, estacion_destino):
+def req_1(control, estacion_inicial_lon, estacion_inicial_lat,estacion_destino_lon, estacion_destino_lat):
     """
     Retorna el resultado del requerimiento 1
     """
     # TODO: Modificar el requerimiento 1
-    return model.req_1(control, estacion_destino)
+    return model.req_1(control, estacion_inicial_lon, estacion_inicial_lat,estacion_destino_lon, estacion_destino_lat)
 
 
-def req_2(control):
+def req_2(control,estacion_inicial_lon, estacion_inicial_lat,estacion_destino_lon, estacion_destino_lat):
     """
     Retorna el resultado del requerimiento 2
     """
     # TODO: Modificar el requerimiento 2
-    pass
+    return model.req_2(control,estacion_inicial_lon, estacion_inicial_lat,estacion_destino_lon, estacion_destino_lat) 
 
 
 def req_3(control):

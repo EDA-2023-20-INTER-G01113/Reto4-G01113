@@ -71,9 +71,7 @@ def load_data(control):
     Carga los datos
     """
     control = controller.load_data(control)
-    print(gr.numVertices(control["malla_vial"]))
-    print(gr.numEdges(control["malla_vial"]))
-    print("hola")
+    
     return control
     #TODO: Realizar la carga de datos
     pass
@@ -86,29 +84,20 @@ def print_data(control, id):
     #TODO: Realizar la función para imprimir un elemento
     pass
 
-def print_req_1(control, estacion_destino):
+def print_req_1(control, estacion_inicial_lon, estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat):
     """
         Función que imprime la solución del Requerimiento 1 en consola
     """
-    path = controller.req_1(control, estacion_destino)
-    if path is not None:
-        size = st.size(path)
-        print(f'El camino tiene una longitud de: {size}')
-        while size>0:
-            elem = st.pop(path)
-            print(elem)
-            size-=1
-    else:
-        print('No hay camino')
-    
+    # TODO: Imprimir el resultado del requerimiento 1
+    controller.req_1(control, estacion_inicial_lon,estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat)
 
 
-def print_req_2(control):
+def print_req_2(control, estacion_inicial_lon,estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat):
     """
         Función que imprime la solución del Requerimiento 2 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 2
-    pass
+    controller.req_2(control, estacion_inicial_lon,estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat)
 
 
 def print_req_3(control):
@@ -158,8 +147,6 @@ def print_req_8(control):
     # TODO: Imprimir el resultado del requerimiento 8
     pass
 
-def print_buscar_camino(control, estacion_inicial):
-    r = controller.buscar_camino(control, estacion_inicial)
 
 # Se crea el controlador asociado a la vista
 control = new_controller()
@@ -177,15 +164,19 @@ if __name__ == "__main__":
         if int(inputs) == 1:
             print("Cargando información de los archivos ....\n")
             data = load_data(control)
-        elif int(inputs) == 2:
-            if not control['camino']:
-                print('¡Asegúrese de correr antes la opción 10!')
-            else: 
-                estacion_destino = input("Estación destino (Ej: 15151-10): ")
-                print_req_1(control, estacion_destino)
+        elif int(inputs) == 2:     
+            estacion_inicial_lon = float(input("Ingrese la longitud de la estacion origen: "))
+            estacion_inicial_lat = float(input("Ingrese la latitud de la estacion de origen: "))
+            estacion_destino_lon = float(input("Ingrese la longitud de la estacion destino: "))
+            estacion_destino_lat = float(input("Ingrese la latitud de la estacion destino: "))
+            print_req_1(control, estacion_inicial_lon, estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat)
             
         elif int(inputs) == 3:
-            print_req_2(control)
+            estacion_inicial_lon = -74.06132772000001#float(input("Ingrese la longitud de la estacion origen: "))
+            estacion_inicial_lat = 4.716416340000023#float(input("Ingrese la latitud de la estacion de origen: "))
+            estacion_destino_lon = -74.08951416000002#float(input("Ingrese la longitud de la estacion destino: "))
+            estacion_destino_lat = 4.744766000000026#float(input("Ingrese la latitud de la estacion destino: "))
+            print_req_2(control, estacion_inicial_lon, estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat)
 
         elif int(inputs) == 4:
             print_req_3(control)
@@ -204,10 +195,6 @@ if __name__ == "__main__":
 
         elif int(inputs) == 9:
             print_req_8(control)
-        
-        elif int(inputs)== 10:
-            estacion_inicial = input("Ingrese el punto de partida (latitud y longitud): ")
-            print_buscar_camino(control, estacion_inicial)
 
         elif int(inputs) == 0:
             working = False
