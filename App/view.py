@@ -113,15 +113,40 @@ def print_req_4(control):
         Función que imprime la solución del Requerimiento 4 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 4
-    pass
+    memflag = input("Ingrese si desea recibir datos de memoria (S/N): ")
+    if memflag=='S':
+        memflag = True
+    else:
+        memflag = False
 
+    response, diff_time, delta_m = controller.req_4(control, memflag)
+    print('\n')
+    print(f'Tiempo que tardó el algoritmo: {diff_time}')
+    if delta_m:
+        print(f'Espacio usado en  memoria: {round(delta_m,3)} [kB]')
+    print('\n')
+    print(f'Distancia total de la red (km): {round(response["distance"],3)}')
+    print(f'Costo total de la red de fibra óptica: {response["cost"]} COP')
+    print(f'Número total de nodos: {response["n_nodes"]}\n')
+
+
+    node_str=''
+    for node in lt.iterator(response['nodes']):
+        node_str+=f'{node},'
+    print(f'{"-"*10} IDs de los nodos incluidos {"-"*10}\n')
+    print(node_str[:-1]) 
+    print('\n')
+    elems = [x for x in lt.iterator(response['edges'])]
+    print(f'{"-"*10} Arcos incluídos {"-"*10}\n')
+    print(f'# corresponde a la posición de un arco en la ruta.\n')
+    print(f'{tabulate(elems,headers="keys",tablefmt="grid")}')
 
 def print_req_5(control):
     """
         Función que imprime la solución del Requerimiento 5 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 5
-    pass
+    
 
 
 def print_req_6(control):
@@ -129,7 +154,35 @@ def print_req_6(control):
         Función que imprime la solución del Requerimiento 6 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 6
-    controller.req_6(control)
+    memflag = input("Ingrese si desea recibir datos de memoria (S/N): ")
+    if memflag=='S':
+        memflag = True
+    else:
+        memflag = False
+    paths, diff_time, delta_m = controller.req_6(control, memflag)
+    print('\n')
+    print(f'Tiempo que tardó el algoritmo: {diff_time}')
+    if delta_m:
+        print(f'Espacio usado en  memoria: {round(delta_m,3)} [kB]')
+    n_path = 1
+    for path in lt.iterator(paths):
+        print('\n')
+        print(f'{"-"*10} Comparendo #{n_path} {"-"*10}\n')
+        print(f'Distancia total del camino (km): {path["distance"]}')
+        print(f'Número total de nodos: {path["n_nodes"]}\n')
+
+        node_str=''
+        for node in lt.iterator(path['nodes']):
+            node_str+=f'{node},'
+        print(f'{"-"*10} IDs de los nodos incluidos {"-"*10}\n')
+        print(node_str[:-1]) 
+        print('\n')
+        print(f'{"-"*10} Arcos incluídos {"-"*10}\n')
+        edges_str=''
+        for edge in lt.iterator(path['edges']):
+            edges_str+=f'{edge}, '
+        print(edges_str.strip()[:-1])
+        n_path+=1
 
 
 def print_req_7(control):
@@ -137,7 +190,37 @@ def print_req_7(control):
         Función que imprime la solución del Requerimiento 7 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 7
-    pass
+    memflag = input("Ingrese si desea recibir datos de memoria (S/N): ")
+    if memflag=='S':
+        memflag = True
+    else:
+        memflag = False
+    path, diff_time, delta_m = controller.req_7(control, memflag)
+    print('\n')
+    print(f'Tiempo que tardó el algoritmo: {diff_time}')
+    if delta_m:
+        print(f'Espacio usado en  memoria: {round(delta_m,3)} [kB]')
+    if path: 
+        print('\n')
+        print(f'{"-"*10} Ruta con el menor número de comparendos {"-"*10}\n')
+        print(f'Número de comparendos en el camino: {path["infracciones"]}')
+        print(f'Distancia total del camino (km): {path["distance"]}')
+        print(f'Número total de nodos: {path["n_nodes"]}\n')
+
+        node_str=''
+        for node in lt.iterator(path['nodes']):
+            node_str+=f'{node},'
+        print(f'{"-"*10} IDs de los nodos incluidos {"-"*10}\n')
+        print(node_str[:-1]) 
+        print('\n')
+        print(f'{"-"*10} Arcos incluídos {"-"*10}\n')
+        edges_str=''
+        for edge in lt.iterator(path['edges']):
+            edges_str+=f'{edge}, '
+        print(edges_str.strip()[:-1])
+    else:
+        print('\n')
+        print('Por favor asegúrese de ingresar unos puntos que se encuentren dentro del límite de la ciudad.')
 
 
 def print_req_8(control):

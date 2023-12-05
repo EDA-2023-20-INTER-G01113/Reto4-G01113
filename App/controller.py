@@ -72,6 +72,7 @@ def load_data(control):
     total_comparendos=model.data_size(control["comparendos"]    )
     comparendos= model.get_data_5(control["comparendos"],total_comparendos)
     estaciones= model.get_data_5(control["estaciones"],model.data_size(control["estaciones"]))
+    model.sort_lat_long(control)
     return control
 
 
@@ -120,12 +121,33 @@ def req_3(control):
     pass
 
 
-def req_4(control):
+def req_4(control, memflag):
     """
     Retorna el resultado del requerimiento 4
     """
     # TODO: Modificar el requerimiento 4
-    pass
+    
+    n_comparendos = int(input("Por favor ingrese el número de comparendos más graves que quiere analizar: "))
+
+    start_time = get_time()
+
+    if memflag:
+        tracemalloc.start()
+        start_memory = get_memory() 
+
+    response = model.req_4(control, n_comparendos)
+
+    if memflag:
+        stop_memory = get_memory()
+        tracemalloc.stop()
+        delta_m = delta_memory(stop_memory, start_memory)
+    else:
+        delta_m = None
+
+    end_time = get_time()
+    diff_time = delta_time(start_time, end_time)
+    return response, diff_time, delta_m
+
 
 
 def req_5(control):
@@ -135,22 +157,62 @@ def req_5(control):
     # TODO: Modificar el requerimiento 5
     pass
 
-def req_6(control):
+def req_6(control, memflag):
     """
     Retorna el resultado del requerimiento 6
     """
     # TODO: Modificar el requerimiento 6
     n_comparendos = int(input("Por favor ingrese el número de comparendos más graves que desea atender: "))
     estacion = input("Por favor ingrese la estación desde la cual desea calcular las rutas: ")
-    model.req_6(control, n_comparendos, estacion)
+    start_time = get_time()
+
+    if memflag:
+        tracemalloc.start()
+        start_memory = get_memory() 
+
+    paths = model.req_6(control, n_comparendos, estacion)
+
+    if memflag:
+        stop_memory = get_memory()
+        tracemalloc.stop()
+        delta_m = delta_memory(stop_memory, start_memory)
+    else:
+        delta_m = None
+
+    end_time = get_time()
+    diff_time = delta_time(start_time, end_time)
+    return paths, diff_time, delta_m
 
 
-def req_7(control):
+def req_7(control, memflag):
     """
     Retorna el resultado del requerimiento 7
     """
     # TODO: Modificar el requerimiento 7
-    pass
+    s_latitude = float(input("Ingrese la latitud del punto inicial: "))
+    s_longitude = float(input("Ingrese la longitud del punto inicial: "))
+    e_latitude = float(input("Ingrese la latitud del punto final: "))
+    e_longitude = float(input("Ingrese la longitud del punto final: "))
+    start_time = get_time()
+
+    if memflag:
+        tracemalloc.start()
+        start_memory = get_memory() 
+
+    results = model.req_7(control, s_latitude, s_longitude, e_latitude, e_longitude)
+
+    if memflag:
+        stop_memory = get_memory()
+        tracemalloc.stop()
+        delta_m = delta_memory(stop_memory, start_memory)
+    else:
+        delta_m = None
+
+    
+    end_time = get_time()
+    diff_time = delta_time(start_time, end_time)
+
+    return results, diff_time, delta_m
 
 def req_8(control):
     """
