@@ -325,7 +325,7 @@ def req_2(control, estacion_inicial_lon, estacion_inicial_lat,estacion_destino_l
         id_inicio= me.getValue(mp.get(tabla,tupla_coord_inicial))
         print(id_inicio)
         id_destino = me.getValue(mp.get(tabla,tupla_coord_destino))
-        control['camino_min']= djk.Dijkstra(control['malla_vial'], id_inicio)
+        control['camino_min']= bfs.BreathFirstSearch(control['malla_vial'], id_inicio)
         path = bfs.pathTo(control['camino_min'], id_destino)
         r = path
     return r
