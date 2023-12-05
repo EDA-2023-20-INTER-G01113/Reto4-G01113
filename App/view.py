@@ -69,8 +69,20 @@ def load_data(control):
     """
     Carga los datos
     """
-    control = controller.load_data(control)
-    
+    control, total_comparendos,comparendos,total_estaciones,estaciones,vertices,cinco_ver,arcos,cinco_arcos,max_lon,min_lon,max_lat,min_lat= controller.load_data(control)
+    print("El total de comparendos es de: "+ str(total_comparendos))
+    print(comparendos)
+    print("El total de estaciones es de: "+str(total_estaciones))
+    print(estaciones)
+    print("El total de vertices cargados en la aplicacion es de : "+str(vertices))
+    print(cinco_ver)
+    print("El total de arcos cargados en la aplicacion es de : "+str(arcos))
+    print(cinco_arcos)
+    print("Los limites de la zona geografica son: ")
+    print("El máximo de longitud es: "+str(max_lon))
+    print("El minimo de longitud es: "+str(min_lon))
+    print("El máximo de latitud es: "+str(max_lat))
+    print("El minimo de latitud es: "+str(min_lat))
     return control
     #TODO: Realizar la carga de datos
     pass
@@ -100,10 +112,16 @@ def print_req_2(control):
     pass
 
 
-def print_req_3(control):
+def print_req_3(control,num,localidad):
     """
         Función que imprime la solución del Requerimiento 3 en consola
     """
+    total,vertices,arcos,kilometros,costo=controller.req_3(control,num,localidad)
+    print("El total de vertices en la red es de: "+str(total))
+    print("Los vertices incluidos son: "+str(vertices))
+    print("los arcos incluidos son: "+str(arcos))
+    print("Cantidad de kilometros de fibra óptica: "+str(kilometros))
+    print("El costo total es de: "+str(costo))
     # TODO: Imprimir el resultado del requerimiento 3
     pass
 
@@ -171,7 +189,9 @@ if __name__ == "__main__":
             print_req_2(control)
 
         elif int(inputs) == 4:
-            print_req_3(control)
+            camaras= int(input("Ingrese el número de camaras que desea instalar: "))
+            localidad= input("Ingrese la localidad: ")
+            print_req_3(control,camaras,localidad)
 
         elif int(inputs) == 5:
             print_req_4(control)

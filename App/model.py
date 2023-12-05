@@ -74,10 +74,13 @@ def new_data_structs():
                                               directed=False,
                                               size=14000,
                                               cmpfunction=compares_1)
+    control["vertices_list"]= lt.newList("ARRAY_LIST")
+    control["arcos_list"]= lt.newList("ARRAY_LIST")
     control["lista_longitud"]= lt.newList("ARRAY_LIST")
     control["lista_latitud"]=lt.newList("ARRAY_LIST")
     control["estaciones"]= lt.newList("ARRAY_LIST")
     control["comparendos"]= lt.newList("ARRAY_LIST")
+    control["localidad"]= mp.newMap(maptype="PROBING",numelements=805249)
 
     return control
     #TODO: Inicializar las estructuras de datos
@@ -91,12 +94,13 @@ def add_vertices(linea, control):
     mapa_vertices= control["vertices"]
     elementos = linea.split(',')
     lista= {"datos":(float(elementos[1]),float(elementos[2])),"id":elementos[0]}
-    mp.put(mapa_vertices,elementos[0],{"datos":lista,"estaciones": lt.newList("ARRAY_LIST"),"localidades":mp.newMap(maptype="PROBING"),"cantidad":0})
+    mp.put(mapa_vertices,elementos[0],{"datos":lista,"estaciones": lt.newList("ARRAY_LIST"),"comparendos":lt.newList("ARRAY_LIST"),"cantidad":0})
     lt.addLast(control["lista_longitud"],elementos[1])
     lt.addLast(control["lista_latitud"],elementos[2])
     gr.insertVertex(control["malla_vial"], elementos[0])
     gr.insertVertex(control["malla_vial_comparendos"], elementos[0])
     mp.put(mapa_geo,(float(elementos[1]),float(elementos[2])),elementos[0])
+    lt.addLast(control["vertices_list"],{"id":elementos[0],"Latitud":elementos[1],"Longitud":elementos[2]})
 
 def añadir_comparendos(linea,control):
     id= linea["VERTICES"]
@@ -105,9 +109,9 @@ def añadir_comparendos(linea,control):
     comparendos= control["comparendos"]
     lt.addLast(comparendos,linea)
     cada=linea["geometry"]
-    for c in cada:
-        print(c)
-    añadir_localidades(linea,control,id)
+    mapa= me.getValue(mp.get(control["vertices"],id))["comparendos"]
+    lt.addLast(mapa,linea)
+    añadir_localidad(linea,control, id)
 
 def formato_comparendos(linea):
     control={}
@@ -115,16 +119,27 @@ def formato_comparendos(linea):
     control[""]
     return control
 
-def añadir_localidades(linea,control,id):
-    mapa= me.getValue(mp.get(control["vertices"],id))["localidades"]
+def añadir_localidad(linea,control,id):
+    mapa= control["localidad"]
     localidad= linea["LOCALIDAD"]
     entry= mp.get(mapa,localidad)
     if entry:
         dataentry= me.getValue(entry)
     else:
-        dataentry= lt.newList("ARRAY_LIST")
+        dataentry= {"vertices":lt.newList("ARRAY_LIST"),"grafo": gr.newGraph(datastructure='ADJ_LIST',
+                                              directed=True,
+                                              size=228047,
+                                              cmpfunction=compares_1),"lista":lt.newList("ARRAY_LIST")}
         mp.put(mapa,localidad,dataentry)
-    lt.addLast(dataentry,linea)
+    l= lt.isPresent(dataentry["vertices"],id)
+    if l==0:
+        lt.addLast(dataentry["vertices"],id)
+        lt.addLast(dataentry["lista"],{"id":id,"total":1})
+    ele= lt.getElement(dataentry["lista"],l)
+    ele["total"]+=1
+    gr.insertVertex(dataentry["grafo"], id)
+
+
 
 def añadir_estaciones(linea,control):
     id= linea["VERTICES"]
@@ -146,6 +161,7 @@ def add_arcos(linea, control):
             distancia=haversine(direc_p,direc_siguiente,unit=Unit.KILOMETERS)
             gr.addEdge(grafo,elementos[0],cada,distancia)
             lt.addLast(lista,cada)
+    lt.addLast(control["arcos_list"],{"id":elementos[0],"adyacentes":lista})
     mp.put(mapa_vertices,elementos[0],lista)
 
 def add_arcos_compa(linea,control):
@@ -170,6 +186,29 @@ def get_data_5(data_structs,tamano):
         p = lt.getElement(data_structs, (tamano-4+b))
         lt.addLast(resultados, p)
     return resultados
+def total_vertices(control):
+    grafo=control["malla_vial"]
+    vertices=gr.numVertices(grafo)
+    arcos= gr.numEdges(grafo)
+    return vertices,arcos
+
+def limites(control):
+    longitud= control["lista_longitud"]
+    latitud= control["lista_longitud"]
+    or_lon= merg.sort(longitud,orden_l)
+    or_la=merg.sort(latitud,orden_l)
+    max_lon= lt.firstElement(or_lon)
+    min_lon= lt.lastElement(or_lon)
+    max_lat= lt.firstElement(or_la)
+    min_lat= lt.lastElement(or_la)
+    return max_lon,min_lon,max_lat,min_lat
+
+
+def orden_l(dato1,dato2):
+    if dato1>dato2:
+        return True
+    else:
+        return False
 
     
 
@@ -229,20 +268,101 @@ def req_2(data_structs):
     pass
 
 
-def req_3(data_structs):
+def req_3(control,localidad,num):
     """
     Función que soluciona el requerimiento 3
     """
-    # TODO: Realizar el requerimiento 3
-    pass
+    grafo_final= gr.newGraph(datastructure='ADJ_LIST',
+                                              directed=False,
+                                              size=228047,
+                                              cmpfunction=compares_1)
+    mapa_arcos= control["arcos"]
+    mapa_localidad=me.getValue(mp.get(control["localidad"],localidad))
+    grafo= mapa_localidad["grafo"]
+    lista_vertices= mapa_localidad["vertices"]
+    for cada in lt.iterator(lista_vertices):
+        arcos= me.getValue(mp.get(mapa_arcos,cada))
+        for arco in lt.iterator(arcos):
+            i=lt.isPresent(lista_vertices,arco)
+            if i!=0:
+                direc_p= me.getValue(mp.get(control["vertices"],cada))["datos"]["datos"]
+                direc_siguiente= me.getValue(mp.get(control["vertices"],arco))["datos"]["datos"]
+                distancia=haversine(direc_p,direc_siguiente,unit=Unit.KILOMETERS)
+                gr.addEdge(grafo,arco,cada,distancia)
+                gr.addEdge(grafo,cada,arco,distancia)
+                
+    lista= mapa_localidad["lista"]
+    ordenada= merg.sort(lista,comparacion_req3)
+    ordenadas=lt.subList(ordenada,1,num)
+
+    lista_de_los_vertices=lt.newList("ARRAY_LIST")
+    for ver in lt.iterator(ordenadas):
+        gr.insertVertex(grafo_final,ver["id"])
+        lt.addLast(lista_de_los_vertices,ver["id"])
+    for cada in lt.iterator(lista_de_los_vertices):
+        elemento=djk.Dijkstra(grafo,cada)
+        i=lt.isPresent(lista_de_los_vertices,cada)
+        for numero in range(i+1,num+1):
+            vertice=lt.getElement(lista_de_los_vertices,numero)
+            peso= djk.distTo(elemento,vertice)
+            gr.addEdge(grafo_final,vertice,cada,peso)
+    mst=prim.PrimMST(grafo_final)
+
+def comparacion_req3(dato1,dato2):
+    if dato1["total"]>dato2["total"]:
+        return True
+    else:
+        return False
+    
+def req_3_auxiliar(control,localidad,num):
+    grafo_final= gr.newGraph(datastructure='ADJ_LIST',
+                                              directed=False,
+                                              size=228047,
+                                              cmpfunction=compares_1)
+    mapa_localidad=me.getValue(mp.get(control["localidad"],localidad))
+    lista= mapa_localidad["lista"]
+    ordenada= merg.sort(lista,comparacion_req3)
+    ordenadas=lt.subList(ordenada,1,num)
+    lista_de_los_vertices=lt.newList("ARRAY_LIST")
+    for ver in lt.iterator(ordenadas):
+        gr.insertVertex(grafo_final,ver["id"])
+        lt.addLast(lista_de_los_vertices,ver["id"])
+
+    for cada in lt.iterator(lista_de_los_vertices):
+        i=lt.isPresent(lista_de_los_vertices,cada)
+        for numero in range(i+1,num+1):
+            vertice=lt.getElement(lista_de_los_vertices,numero)
+            direc_p= me.getValue(mp.get(control["vertices"],cada))["datos"]["datos"]
+            direc_siguiente= me.getValue(mp.get(control["vertices"],vertice))["datos"]["datos"]
+            distancia=haversine(direc_p,direc_siguiente,unit=Unit.KILOMETERS)
+            gr.addEdge(grafo_final,vertice,cada,distancia)
+    mst=prim.PrimMST(grafo_final)
+    kilometros= prim.weightMST(grafo_final,mst)
+    elem=prim.edgesMST(grafo_final,mst)["mst"]
+    elem_size= qu.size(elem)
+    vertices_fin= lt.newList("ARRAY_LIST")
+    arcos=lt.newList("ARRAY_LIST")
+    while elem_size>0:
+        elemento= qu.dequeue(elem)
+        lt.addLast(arcos,{"VerticeA":elemento["vertexA"],"VerticeB":elemento["vertexB"]})
+        a=lt.isPresent(vertices_fin,elemento["vertexA"])
+        b=lt.isPresent(vertices_fin,elemento["vertexB"])
+        if a==0:
+            lt.addLast(vertices_fin,elemento["vertexA"])
+        if b==0:
+            lt.addLast(vertices_fin,elemento["vertexB"])
+        elem_size-=1
+    costo= kilometros*1000000
+    total= lt.size(vertices_fin)
+    return total,vertices_fin,arcos,kilometros,costo
 
 
-def req_4(data_structs):
+
+def req_4(control,localidad):
     """
     Función que soluciona el requerimiento 4
     """
-    # TODO: Realizar el requerimiento 4
-    pass
+    
 
 
 def req_5(data_structs):

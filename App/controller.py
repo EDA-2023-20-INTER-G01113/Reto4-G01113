@@ -69,10 +69,16 @@ def load_data(control):
         if "#" not in arco:
             model.add_arcos(arco,control)
             model.add_arcos_compa(arco,control)
-    total_comparendos=model.data_size(control["comparendos"]    )
+    total_comparendos=model.data_size(control["comparendos"])
     comparendos= model.get_data_5(control["comparendos"],total_comparendos)
-    estaciones= model.get_data_5(control["estaciones"],model.data_size(control["estaciones"]))
-    return control
+    total_estaciones= model.data_size(control["estaciones"])
+    estaciones= model.get_data_5(control["estaciones"],total_estaciones)
+    vertices,arcos= model.total_vertices(control)
+    arcos_t= model.data_size(control["arcos_list"])
+    cinco_ver= model.get_data_5(control["vertices_list"],vertices)
+    cinco_arcos=model.get_data_5(control["arcos_list"],arcos_t)
+    max_lon,min_lon,max_lat,min_lat= model.limites(control)
+    return control, total_comparendos,comparendos,total_estaciones,estaciones,vertices,cinco_ver,arcos,cinco_arcos,max_lon,min_lon,max_lat,min_lat
 
 
 # Funciones de ordenamiento
@@ -112,10 +118,13 @@ def req_2(control):
     pass
 
 
-def req_3(control):
+def req_3(control,num,localidad):
     """
     Retorna el resultado del requerimiento 3
     """
+    localidad="CHAPINERO"
+    num=20
+    return model.req_3_auxiliar(control,localidad,num)
     # TODO: Modificar el requerimiento 3
     pass
 
