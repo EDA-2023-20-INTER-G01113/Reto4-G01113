@@ -378,6 +378,9 @@ def req_7(data_structs, s_latitude, s_longitude, e_latitude, e_longitude):
     latitudes = data_structs['lista_latitud_ordenada']
     longitudes = data_structs['lista_longitud_ordenada']
 
+    latitudes_g= data_structs['lista_latitud']
+    longitudes_g = data_structs['lista_longitud']
+
     min_lat = float(lt.firstElement(latitudes))
     max_lat = float(lt.lastElement(latitudes))
     min_long = float(lt.firstElement(longitudes))
@@ -392,8 +395,8 @@ def req_7(data_structs, s_latitude, s_longitude, e_latitude, e_longitude):
         minimum_e = math.inf
 
         for i in range(1,lt.size(latitudes)+1):
-            latitud = float(lt.getElement(latitudes,i))
-            longitud = float(lt.getElement(longitudes, i))
+            latitud = float(lt.getElement(latitudes_g,i))
+            longitud = float(lt.getElement(longitudes_g, i))
             dist_s = haversine((s_latitude,s_longitude), (latitud,longitud),unit=Unit.KILOMETERS)
             dist_e = haversine((e_latitude,e_longitude), (latitud,longitud), unit=Unit.KILOMETERS)
             
