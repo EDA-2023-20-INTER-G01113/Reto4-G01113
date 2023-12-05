@@ -62,6 +62,7 @@ def print_menu():
     print("7- Ejecutar Requerimiento 6")
     print("8- Ejecutar Requerimiento 7")
     print("9- Ejecutar Requerimiento 8")
+    print("10- Ejecutar buscar camino (antes del requerimiento 1)")
     print("0- Salir")
 
 
@@ -95,21 +96,21 @@ def print_data(control, id):
     #TODO: Realizar la función para imprimir un elemento
     pass
 
-def print_req_1(control):
+def print_req_1(control, estacion_inicial_lon, estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat):
     """
         Función que imprime la solución del Requerimiento 1 en consola
     """
 
     # TODO: Imprimir el resultado del requerimiento 1
-    pass
+    controller.req_1(control, estacion_inicial_lon,estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat)
 
 
-def print_req_2(control):
+def print_req_2(control, estacion_inicial_lon,estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat):
     """
         Función que imprime la solución del Requerimiento 2 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 2
-    pass
+    controller.req_2(control, estacion_inicial_lon,estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat)
 
 
 def print_req_3(control,num,localidad):
@@ -132,15 +133,40 @@ def print_req_4(control):
         Función que imprime la solución del Requerimiento 4 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 4
-    pass
+    memflag = input("Ingrese si desea recibir datos de memoria (S/N): ")
+    if memflag=='S':
+        memflag = True
+    else:
+        memflag = False
 
+    response, diff_time, delta_m = controller.req_4(control, memflag)
+    print('\n')
+    print(f'Tiempo que tardó el algoritmo: {diff_time}')
+    if delta_m:
+        print(f'Espacio usado en  memoria: {round(delta_m,3)} [kB]')
+    print('\n')
+    print(f'Distancia total de la red (km): {round(response["distance"],3)}')
+    print(f'Costo total de la red de fibra óptica: {response["cost"]} COP')
+    print(f'Número total de nodos: {response["n_nodes"]}\n')
+
+
+    node_str=''
+    for node in lt.iterator(response['nodes']):
+        node_str+=f'{node},'
+    print(f'{"-"*10} IDs de los nodos incluidos {"-"*10}\n')
+    print(node_str[:-1]) 
+    print('\n')
+    elems = [x for x in lt.iterator(response['edges'])]
+    print(f'{"-"*10} Arcos incluídos {"-"*10}\n')
+    print(f'# corresponde a la posición de un arco en la ruta.\n')
+    print(f'{tabulate(elems,headers="keys",tablefmt="grid")}')
 
 def print_req_5(control):
     """
         Función que imprime la solución del Requerimiento 5 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 5
-    pass
+    
 
 
 def print_req_6(control):
@@ -148,7 +174,35 @@ def print_req_6(control):
         Función que imprime la solución del Requerimiento 6 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 6
-    pass
+    memflag = input("Ingrese si desea recibir datos de memoria (S/N): ")
+    if memflag=='S':
+        memflag = True
+    else:
+        memflag = False
+    paths, diff_time, delta_m = controller.req_6(control, memflag)
+    print('\n')
+    print(f'Tiempo que tardó el algoritmo: {diff_time}')
+    if delta_m:
+        print(f'Espacio usado en  memoria: {round(delta_m,3)} [kB]')
+    n_path = 1
+    for path in lt.iterator(paths):
+        print('\n')
+        print(f'{"-"*10} Comparendo #{n_path} {"-"*10}\n')
+        print(f'Distancia total del camino (km): {path["distance"]}')
+        print(f'Número total de nodos: {path["n_nodes"]}\n')
+
+        node_str=''
+        for node in lt.iterator(path['nodes']):
+            node_str+=f'{node},'
+        print(f'{"-"*10} IDs de los nodos incluidos {"-"*10}\n')
+        print(node_str[:-1]) 
+        print('\n')
+        print(f'{"-"*10} Arcos incluídos {"-"*10}\n')
+        edges_str=''
+        for edge in lt.iterator(path['edges']):
+            edges_str+=f'{edge}, '
+        print(edges_str.strip()[:-1])
+        n_path+=1
 
 
 def print_req_7(control):
@@ -156,7 +210,37 @@ def print_req_7(control):
         Función que imprime la solución del Requerimiento 7 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 7
-    pass
+    memflag = input("Ingrese si desea recibir datos de memoria (S/N): ")
+    if memflag=='S':
+        memflag = True
+    else:
+        memflag = False
+    path, diff_time, delta_m = controller.req_7(control, memflag)
+    print('\n')
+    print(f'Tiempo que tardó el algoritmo: {diff_time}')
+    if delta_m:
+        print(f'Espacio usado en  memoria: {round(delta_m,3)} [kB]')
+    if path: 
+        print('\n')
+        print(f'{"-"*10} Ruta con el menor número de comparendos {"-"*10}\n')
+        print(f'Número de comparendos en el camino: {path["infracciones"]}')
+        print(f'Distancia total del camino (km): {path["distance"]}')
+        print(f'Número total de nodos: {path["n_nodes"]}\n')
+
+        node_str=''
+        for node in lt.iterator(path['nodes']):
+            node_str+=f'{node},'
+        print(f'{"-"*10} IDs de los nodos incluidos {"-"*10}\n')
+        print(node_str[:-1]) 
+        print('\n')
+        print(f'{"-"*10} Arcos incluídos {"-"*10}\n')
+        edges_str=''
+        for edge in lt.iterator(path['edges']):
+            edges_str+=f'{edge}, '
+        print(edges_str.strip()[:-1])
+    else:
+        print('\n')
+        print('Por favor asegúrese de ingresar unos puntos que se encuentren dentro del límite de la ciudad.')
 
 
 def print_req_8(control):
@@ -183,11 +267,19 @@ if __name__ == "__main__":
         if int(inputs) == 1:
             print("Cargando información de los archivos ....\n")
             data = load_data(control)
-        elif int(inputs) == 2:
-            print_req_1(control)
-
+        elif int(inputs) == 2:     
+            estacion_inicial_lon = float(input("Ingrese la longitud de la estacion origen: "))
+            estacion_inicial_lat = float(input("Ingrese la latitud de la estacion de origen: "))
+            estacion_destino_lon = float(input("Ingrese la longitud de la estacion destino: "))
+            estacion_destino_lat = float(input("Ingrese la latitud de la estacion destino: "))
+            print_req_1(control, estacion_inicial_lon, estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat)
+            
         elif int(inputs) == 3:
-            print_req_2(control)
+            estacion_inicial_lon = -74.06132772000001#float(input("Ingrese la longitud de la estacion origen: "))
+            estacion_inicial_lat = 4.716416340000023#float(input("Ingrese la latitud de la estacion de origen: "))
+            estacion_destino_lon = -74.08951416000002#float(input("Ingrese la longitud de la estacion destino: "))
+            estacion_destino_lat = 4.744766000000026#float(input("Ingrese la latitud de la estacion destino: "))
+            print_req_2(control, estacion_inicial_lon, estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat)
 
         elif int(inputs) == 4:
             camaras= int(input("Ingrese el número de camaras que desea instalar: "))

@@ -49,6 +49,7 @@ from DISClib.Algorithms.Sorting import quicksort as quk
 assert cf
 from haversine import haversine, Unit
 import json
+import math
 """
 Se define la estructura de un catálogo de videos. El catálogo tendrá
 dos listas, una para los videos, otra para las categorias de los mismos.
@@ -62,7 +63,12 @@ def new_data_structs():
     Inicializa las estructuras de datos del modelo. Las crea de
     manera vacía para posteriormente almacenar la información.
     """
-    control={}
+    control={
+        'camino':  None,
+        'camino_min':None,
+        }
+    
+    
     control["malla_vial"]=  gr.newGraph(datastructure='ADJ_LIST',
                                               directed=False,
                                               size=14000,
@@ -80,6 +86,9 @@ def new_data_structs():
     control["lista_latitud"]=lt.newList("ARRAY_LIST")
     control["estaciones"]= lt.newList("ARRAY_LIST")
     control["comparendos"]= lt.newList("ARRAY_LIST")
+    control['comparendos_gravedad']=om.newMap(cmpfunction=compare_gravedad)
+    control['lista_longitud_ordenada']= lt.newList("ARRAY_LIST")
+    control["lista_latitud_ordenada"]=lt.newList("ARRAY_LIST")    
     control["localidad"]= mp.newMap(maptype="PROBING",numelements=805249)
 
     return control
@@ -96,7 +105,9 @@ def add_vertices(linea, control):
     lista= {"datos":(float(elementos[1]),float(elementos[2])),"id":elementos[0]}
     mp.put(mapa_vertices,elementos[0],{"datos":lista,"estaciones": lt.newList("ARRAY_LIST"),"comparendos":lt.newList("ARRAY_LIST"),"cantidad":0})
     lt.addLast(control["lista_longitud"],elementos[1])
+    lt.addLast(control["lista_longitud_ordenada"],elementos[1])
     lt.addLast(control["lista_latitud"],elementos[2])
+    lt.addLast(control["lista_latitud_ordenada"],elementos[2])
     gr.insertVertex(control["malla_vial"], elementos[0])
     gr.insertVertex(control["malla_vial_comparendos"], elementos[0])
     mp.put(mapa_geo,(float(elementos[1]),float(elementos[2])),elementos[0])
@@ -108,6 +119,8 @@ def añadir_comparendos(linea,control):
     peso+=1
     comparendos= control["comparendos"]
     lt.addLast(comparendos,linea)
+    tree_key = linea['TIPO_SERVICIO'],linea['INFRACCION'], linea['GlobalID']
+    om.put(control['comparendos_gravedad'], tree_key,linea)
     cada=linea["geometry"]
     mapa= me.getValue(mp.get(control["vertices"],id))["comparendos"]
     lt.addLast(mapa,linea)
@@ -234,6 +247,27 @@ def new_data(id, info):
 
 
 # Funciones de consulta
+""""
+def buscar_camino(control, estacion_inicial_lon, estacio_inicial_lat):
+    tupla_coord_inicial = (estacion_inicial_lon,estacio_inicial_lat)
+    if not om.contains(control["geograficas"],tupla_coord_inicial):
+        r = "La coordenada no se encuentra"
+    else: 
+         id_inicio = control["geograficas"][tupla_coord_inicial]
+         control['camino']= bfs.BreadhtFisrtSearch(control['malla_vial'], id_inicio)
+         r = control
+    return r
+    
+    k_v = om.get(control["geograficas"],tupla_coord_inicial)
+    print(k_v)
+    id_inicio = control["geograficas"][tupla_coord_inicial]
+    print(id_inicio)
+    #print(control["geograficas"])
+    #id_inicio = control["geograficas"][tupla_coord_inicial]
+    control['camino']= bfs.BreadhtFisrtSearch(control['malla_vial'], id_inicio)
+    return control
+    """
+    
 
 def get_data(data_structs, id):
     """
@@ -252,20 +286,50 @@ def data_size(data_structs):
     pass
 
 
-def req_1(data_structs):
+def req_1(control, estacion_inicial_lon, estacion_inicial_lat,estacion_destino_lon, estacion_destino_lat):
     """
     Función que soluciona el requerimiento 1
     """
-    # TODO: Realizar el requerimiento 1
-    pass
+    tupla_coord_inicial = (estacion_inicial_lon,estacion_inicial_lat)
+    tupla_coord_destino = (estacion_destino_lon,estacion_destino_lat)
+    
+    tabla = control["geograficas"]
+    
+    if not om.contains(tabla,tupla_coord_inicial) or not om.contains(tabla,tupla_coord_destino):
+        r = "La coordenada no existe"
+        
+    else:
+        id_inicio= me.getValue(mp.get(tabla,tupla_coord_inicial))
+        id_destino = me.getValue(mp.get(tabla,tupla_coord_destino))
+        control['camino']= bfs.BreadhtFisrtSearch(control['malla_vial'], id_inicio)
+        path = bfs.pathTo(control['camino'], id_destino)
+        r = path
+    return r
 
 
-def req_2(data_structs):
+
+def req_2(control, estacion_inicial_lon, estacion_inicial_lat,estacion_destino_lon, estacion_destino_lat ):
     """
     Función que soluciona el requerimiento 2
     """
     # TODO: Realizar el requerimiento 2
-    pass
+    tupla_coord_inicial = (estacion_inicial_lon,estacion_inicial_lat)
+    tupla_coord_destino = (estacion_destino_lon,estacion_destino_lat)
+    
+    tabla = control["geograficas"]
+
+    if not om.contains(tabla,tupla_coord_inicial) or not om.contains(tabla,tupla_coord_destino):
+        r = "La coordenada no existe"
+
+    else:
+        id_inicio= me.getValue(mp.get(tabla,tupla_coord_inicial))
+        print(id_inicio)
+        id_destino = me.getValue(mp.get(tabla,tupla_coord_destino))
+        control['camino_min']= djk.Dijkstra(control['malla_vial'], id_inicio)
+        path = bfs.pathTo(control['camino_min'], id_destino)
+        r = path
+    return r
+    
 
 
 def req_3(control,localidad,num):
@@ -376,11 +440,72 @@ def req_3_auxiliar(control,localidad,num):
 
 
 
-def req_4(control,localidad):
+def req_4(data_structs,n_comparendos):
     """
     Función que soluciona el requerimiento 4
     """
+    # TODO: Realizar el requerimiento 4
+    comparendos = lt.newList("ARRAY_LIST")
+    new_graph = gr.newGraph(datastructure='ADJ_LIST',
+                                              directed=False,
+                                              size=n_comparendos*2,
+                                              cmpfunction=compares_1)
+    tree_size = om.size(data_structs['comparendos_gravedad'])
+    for i in range(tree_size-n_comparendos,tree_size):
+        key = om.select(data_structs['comparendos_gravedad'],i)
+        k_v = om.get(data_structs['comparendos_gravedad'],key)
+        comparendo = me.getValue(k_v)
+        lt.addLast(comparendos, comparendo)
     
+    max_key = om.maxKey(data_structs['comparendos_gravedad'])
+    k_v = om.get(data_structs['comparendos_gravedad'], max_key)
+    max_comparendo = me.getValue(k_v)
+    lt.addLast(comparendos, max_comparendo)
+
+    for comparendo in lt.iterator(comparendos):
+        gr.insertVertex(new_graph, comparendo['VERTICES'])
+    
+    for vertex1 in lt.iterator(gr.vertices(new_graph)):
+        for vertex2 in lt.iterator(gr.vertices(new_graph)):
+            if vertex1!=vertex2 and not lt.isPresent(gr.adjacents(new_graph, vertex1),vertex2):
+                dic1=me.getValue(mp.get(data_structs['vertices'],vertex1))
+                dic2=me.getValue(mp.get(data_structs['vertices'],vertex2))
+                dist = haversine(dic1['datos']['datos'],dic2['datos']['datos'], unit=Unit.KILOMETERS)
+                gr.addEdge(new_graph,vertex1,vertex2,dist)
+    
+    mst_tree = prim.PrimMST(new_graph)
+    network_dist = prim.weightMST(new_graph,mst_tree)
+    elem = prim.edgesMST(new_graph,mst_tree)['mst']
+
+    route_dic = {'n_nodes':0,
+                     'nodes':lt.newList("ARRAY_LIST"),
+                     'edges':lt.newList("ARRAY_LIST"),
+                     'distance':network_dist}
+
+    route_size = qu.size(elem)
+    cycle = 0
+    while route_size>0:
+        edge_dic = qu.dequeue(elem)
+        edge = {'Arco #':cycle, 'Vértice inicial':edge_dic['vertexA'], 'Vértice final': edge_dic['vertexB']}
+        lt.addLast(route_dic['edges'], edge)
+        if cycle==0:
+            lt.addLast(route_dic['nodes'],edge_dic['vertexA'])
+            lt.addLast(route_dic['nodes'],edge_dic['vertexB'])
+        else:
+            vertex_a = edge_dic['vertexA']
+            vertex_b = edge_dic['vertexB']
+            if not lt.isPresent(route_dic['nodes'], vertex_a):
+                lt.addLast(route_dic['nodes'],vertex_a)
+            if not lt.isPresent(route_dic['nodes'], vertex_b):
+                lt.addLast(route_dic['nodes'],vertex_b)
+        cycle+=1
+        route_size-=1
+
+    route_dic['n_nodes']=lt.size(route_dic['nodes'])
+    route_dic['cost']=round(route_dic['distance']*1000000,3)
+    return route_dic
+    
+
 
 
 def req_5(data_structs):
@@ -391,22 +516,127 @@ def req_5(data_structs):
     pass
 
 
-def req_6(data_structs):
+def req_6(data_structs, n_comparendos, estacion):
     """
     Función que soluciona el requerimiento 6
     """
     # TODO: Realizar el requerimiento 6
-    pass
+    comparendos = lt.newList("ARRAY_LIST")
+    rutas = lt.newList("ARRAY_LIST")
+    response = lt.newList("ARRAY_LIST")
 
+    tree_size = om.size(data_structs['comparendos_gravedad'])
+    for i in range(tree_size-n_comparendos,tree_size):
+        key = om.select(data_structs['comparendos_gravedad'],i)
+        k_v = om.get(data_structs['comparendos_gravedad'],key)
+        comparendo = me.getValue(k_v)
+        lt.addLast(comparendos, comparendo)
+    max_key = om.maxKey(data_structs['comparendos_gravedad'])
+    k_v = om.get(data_structs['comparendos_gravedad'], max_key)
+    max_comparendo = me.getValue(k_v)
+    lt.addLast(comparendos, max_comparendo)
 
-def req_7(data_structs):
+    for epo in lt.iterator(data_structs['estaciones']):
+        if estacion in epo['EPODESCRIP']:
+            vert_epo = epo['VERTICES']
+    routes = djk.Dijkstra(data_structs['malla_vial'],vert_epo)
+    
+    for comparendo in lt.iterator(comparendos):
+        path = djk.pathTo(routes, comparendo['VERTICES'])
+        lt.addLast(rutas, path)
+    
+    for elem in lt.iterator(rutas):
+        route_dic = {'n_nodes':0,
+                     'nodes':lt.newList("ARRAY_LIST"),
+                     'edges':lt.newList("ARRAY_LIST"),
+                     'distance':0}
+        route_size = st.size(elem)
+        cycle = 0
+        while route_size>0:
+            edge_dic = st.pop(elem)
+            route_dic['distance']+=edge_dic['weight']
+            edge = f"{edge_dic['vertexA']} - {edge_dic['vertexB']}"
+            lt.addLast(route_dic['edges'], edge)
+            if cycle==0:
+                lt.addLast(route_dic['nodes'],edge_dic['vertexA'])
+                lt.addLast(route_dic['nodes'],edge_dic['vertexB'])
+            else:
+                lt.addLast(route_dic['nodes'],edge_dic['vertexB'])
+            cycle+=1
+            route_size-=1
+        route_dic['n_nodes']=lt.size(route_dic['nodes'])
+        lt.addLast(response, route_dic)
+
+    return response
+def req_7(data_structs, s_latitude, s_longitude, e_latitude, e_longitude):
     """
     Función que soluciona el requerimiento 7
     """
     # TODO: Realizar el requerimiento 7
-    pass
 
+    latitudes = data_structs['lista_latitud_ordenada']
+    longitudes = data_structs['lista_longitud_ordenada']
 
+    latitudes_g= data_structs['lista_latitud']
+    longitudes_g = data_structs['lista_longitud']
+
+    min_lat = float(lt.firstElement(latitudes))
+    max_lat = float(lt.lastElement(latitudes))
+    min_long = float(lt.firstElement(longitudes))
+    max_long = float(lt.lastElement(longitudes))
+
+    #print(min_lat, max_lat, min_long, max_long)
+    if min_lat<=float(s_latitude)<=max_lat and min_long<=float(s_longitude)<=max_long and min_lat<=float(e_latitude)<=max_lat and min_long<=float(e_longitude)<=max_long:
+        node_s = None
+        minimum_s = math.inf
+
+        node_e = None
+        minimum_e = math.inf
+
+        for i in range(1,lt.size(latitudes)+1):
+            latitud = float(lt.getElement(latitudes_g,i))
+            longitud = float(lt.getElement(longitudes_g, i))
+            dist_s = haversine((s_latitude,s_longitude), (latitud,longitud),unit=Unit.KILOMETERS)
+            dist_e = haversine((e_latitude,e_longitude), (latitud,longitud), unit=Unit.KILOMETERS)
+            
+            if node_s == None or dist_s<minimum_s:
+                node_s = i
+                minimum_s = dist_s
+            
+            if node_e == None or dist_e<minimum_e:
+                node_e = i
+                minimum_e = dist_e
+        
+        routes = djk.Dijkstra(data_structs['malla_vial_comparendos'],str(node_s))
+        route = djk.pathTo(routes, str(node_e))
+
+        route_dic = {'n_nodes':0,
+                        'nodes':lt.newList("ARRAY_LIST"),
+                        'edges':lt.newList("ARRAY_LIST"),
+                        'infracciones':0,
+                        'distance':0}
+        route_size = st.size(route)
+        cycle = 0
+        while route_size>0:
+            edge_dic = st.pop(route)
+            edge_dist = gr.getEdge(data_structs['malla_vial'], edge_dic['vertexA'], edge_dic['vertexB'])
+            route_dic['distance']+=edge_dist['weight']
+            route_dic['infracciones']+=edge_dic['weight']
+            edge = f"{edge_dic['vertexA']} - {edge_dic['vertexB']}"
+            lt.addLast(route_dic['edges'], edge)
+            if cycle==0:
+                lt.addLast(route_dic['nodes'],edge_dic['vertexA'])
+                lt.addLast(route_dic['nodes'],edge_dic['vertexB'])
+            else:
+                lt.addLast(route_dic['nodes'],edge_dic['vertexB'])
+            cycle+=1
+            route_size-=1
+        route_dic['n_nodes']=lt.size(route_dic['nodes'])
+
+        return route_dic
+    else: 
+        return None
+    
 def req_8(data_structs):
     """
     Función que soluciona el requerimiento 8
@@ -437,8 +667,37 @@ def compares_1(stop, keyvaluestop):
     else:
         return -1
 
+def compare_gravedad(comparendo, comparendo2):
+    servicio1= comparendo[0]
+    servicio2 = comparendo2[0]
+    if servicio1=='Público':
+        weight1= 3
+    elif servicio1=='Oficial':
+        weight1=2
+    else:
+        weight1= 1
+    
+    if servicio2=='Público':
+        weight2= 3
+    elif servicio2=='Oficial':
+        weight2=2
+    else:
+        weight2= 1
+    
+    if weight1>weight2:
+        return 1
+    
+    elif weight1==weight2 and comparendo[1]>comparendo2[1]:
+        return 1
+    
+    elif weight1==weight2 and comparendo[1]==comparendo2[1] and comparendo[2]>comparendo2[2]:
+        return 1
 
-def sort_criteria(data_1, data_2):
+    elif weight1==weight2 and comparendo[1]==comparendo2[1] and comparendo[2]==comparendo2[2]:
+        return 0
+    else:
+        return -1
+def sort_criteria_lat_long(data_1, data_2):
     """sortCriteria criterio de ordenamiento para las funciones de ordenamiento
 
     Args:
@@ -449,12 +708,15 @@ def sort_criteria(data_1, data_2):
         _type_: _description_
     """
     #TODO: Crear función comparadora para ordenar
-    pass
+    if float(data_1)<float(data_2):
+        return True
+    return False
 
 
-def sort(data_structs):
+def sort_lat_long(data_structs):
     """
     Función encargada de ordenar la lista con los datos
     """
     #TODO: Crear función de ordenamiento
-    pass
+    merg.sort(data_structs['lista_longitud_ordenada'], sort_criteria_lat_long)
+    merg.sort(data_structs['lista_latitud_ordenada'], sort_criteria_lat_long)
