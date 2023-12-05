@@ -253,7 +253,7 @@ def req_1(control, estacion_inicial_lon, estacion_inicial_lat,estacion_destino_l
         id_inicio= me.getValue(mp.get(tabla,tupla_coord_inicial))
         id_destino = me.getValue(mp.get(tabla,tupla_coord_destino))
         control['camino']= bfs.BreadhtFisrtSearch(control['malla_vial'], id_inicio)
-        path = data_sizefs.pathTo(control['camino'], id_destino)
+        path = bfs.pathTo(control['camino'], id_destino)
         r = path
     return r
 
