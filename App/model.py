@@ -278,6 +278,7 @@ def req_4(data_structs, n_comparendos):
     mst_tree = prim.PrimMST(new_graph)
     network_dist = prim.weightMST(new_graph,mst_tree)
     elem = prim.edgesMST(new_graph,mst_tree)['mst']
+
     route_dic = {'n_nodes':0,
                      'nodes':lt.newList("ARRAY_LIST"),
                      'edges':lt.newList("ARRAY_LIST"),
@@ -287,7 +288,6 @@ def req_4(data_structs, n_comparendos):
     cycle = 0
     while route_size>0:
         edge_dic = qu.dequeue(elem)
-        route_dic['distance']+=edge_dic['weight']
         edge = {'Arco #':cycle, 'Vértice inicial':edge_dic['vertexA'], 'Vértice final': edge_dic['vertexB']}
         lt.addLast(route_dic['edges'], edge)
         if cycle==0:
@@ -302,6 +302,7 @@ def req_4(data_structs, n_comparendos):
                 lt.addLast(route_dic['nodes'],vertex_b)
         cycle+=1
         route_size-=1
+
     route_dic['n_nodes']=lt.size(route_dic['nodes'])
     route_dic['cost']=round(route_dic['distance']*1000000,3)
     return route_dic
