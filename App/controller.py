@@ -122,9 +122,12 @@ def req_3(control,num,localidad):
     """
     Retorna el resultado del requerimiento 3
     """
-    localidad="CHAPINERO"
-    num=20
-    return model.req_3_auxiliar(control,localidad,num)
+    start_time = get_time()
+    total,vertices_fin,arcos,kilometros,costo=model.req_3_auxiliar(control,localidad,num)
+    end_time = get_time()
+    delta_times = delta_time(start_time, end_time)
+    return total,vertices_fin,arcos,kilometros,costo,delta_times
+
     # TODO: Modificar el requerimiento 3
     pass
 

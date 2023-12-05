@@ -116,7 +116,8 @@ def print_req_3(control,num,localidad):
     """
         Función que imprime la solución del Requerimiento 3 en consola
     """
-    total,vertices,arcos,kilometros,costo=controller.req_3(control,num,localidad)
+    total,vertices,arcos,kilometros,costo,delta_times=controller.req_3(control,num,localidad)
+    print("El tiempo de ejecución fue de :"+str(delta_times))
     print("El total de vertices en la red es de: "+str(total))
     print("Los vertices incluidos son: "+str(vertices))
     print("los arcos incluidos son: "+str(arcos))

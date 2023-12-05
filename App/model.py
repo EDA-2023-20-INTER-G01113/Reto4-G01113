@@ -307,6 +307,24 @@ def req_3(control,localidad,num):
             peso= djk.distTo(elemento,vertice)
             gr.addEdge(grafo_final,vertice,cada,peso)
     mst=prim.PrimMST(grafo_final)
+    kilometros= prim.weightMST(grafo_final,mst)
+    elem=prim.edgesMST(grafo_final,mst)["mst"]
+    elem_size= qu.size(elem)
+    vertices_fin= lt.newList("ARRAY_LIST")
+    arcos=lt.newList("ARRAY_LIST")
+    while elem_size>0:
+        elemento= qu.dequeue(elem)
+        lt.addLast(arcos,{"VerticeA":elemento["vertexA"],"VerticeB":elemento["vertexB"]})
+        a=lt.isPresent(vertices_fin,elemento["vertexA"])
+        b=lt.isPresent(vertices_fin,elemento["vertexB"])
+        if a==0:
+            lt.addLast(vertices_fin,elemento["vertexA"])
+        if b==0:
+            lt.addLast(vertices_fin,elemento["vertexB"])
+        elem_size-=1
+    costo= kilometros*1000000
+    total= lt.size(vertices_fin)
+    return total,vertices_fin,arcos,kilometros,costo
 
 def comparacion_req3(dato1,dato2):
     if dato1["total"]>dato2["total"]:
