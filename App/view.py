@@ -88,6 +88,7 @@ def print_req_1(control, estacion_inicial_lon, estacion_inicial_lat, estacion_de
     """
         Función que imprime la solución del Requerimiento 1 en consola
     """
+
     # TODO: Imprimir el resultado del requerimiento 1
     controller.req_1(control, estacion_inicial_lon,estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat)
 
@@ -129,7 +130,7 @@ def print_req_6(control):
         Función que imprime la solución del Requerimiento 6 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 6
-    pass
+    controller.req_6(control)
 
 
 def print_req_7(control):

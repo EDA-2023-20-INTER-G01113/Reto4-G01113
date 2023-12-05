@@ -140,7 +140,9 @@ def req_6(control):
     Retorna el resultado del requerimiento 6
     """
     # TODO: Modificar el requerimiento 6
-    pass
+    n_comparendos = int(input("Por favor ingrese el número de comparendos más graves que desea atender: "))
+    estacion = input("Por favor ingrese la estación desde la cual desea calcular las rutas: ")
+    model.req_6(control, n_comparendos, estacion)
 
 
 def req_7(control):
@@ -149,7 +151,6 @@ def req_7(control):
     """
     # TODO: Modificar el requerimiento 7
     pass
-
 
 def req_8(control):
     """
