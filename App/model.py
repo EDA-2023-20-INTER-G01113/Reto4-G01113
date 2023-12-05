@@ -63,7 +63,12 @@ def new_data_structs():
     Inicializa las estructuras de datos del modelo. Las crea de
     manera vacía para posteriormente almacenar la información.
     """
-    control={}
+    control={
+        'camino':  None,
+        'camino_min':None,
+        }
+    
+    
     control["malla_vial"]=  gr.newGraph(datastructure='ADJ_LIST',
                                               directed=False,
                                               size=14000,
@@ -112,7 +117,9 @@ def añadir_comparendos(linea,control):
     tree_key = linea['TIPO_SERVICIO'],linea['INFRACCION'], linea['GlobalID']
     om.put(control['comparendos_gravedad'], tree_key,linea)
     cada=linea["geometry"]
-    añadir_localidades(linea,control,id)
+    for c in cada:
+        #print(c)
+     añadir_localidades(linea,control,id)
 
 def formato_comparendos(linea):
     control={}
@@ -176,7 +183,6 @@ def get_data_5(data_structs,tamano):
         lt.addLast(resultados, p)
     return resultados
 
-    
 
 
 
@@ -200,6 +206,27 @@ def new_data(id, info):
 
 
 # Funciones de consulta
+""""
+def buscar_camino(control, estacion_inicial_lon, estacio_inicial_lat):
+    tupla_coord_inicial = (estacion_inicial_lon,estacio_inicial_lat)
+    if not om.contains(control["geograficas"],tupla_coord_inicial):
+        r = "La coordenada no se encuentra"
+    else: 
+         id_inicio = control["geograficas"][tupla_coord_inicial]
+         control['camino']= bfs.BreadhtFisrtSearch(control['malla_vial'], id_inicio)
+         r = control
+    return r
+    
+    k_v = om.get(control["geograficas"],tupla_coord_inicial)
+    print(k_v)
+    id_inicio = control["geograficas"][tupla_coord_inicial]
+    print(id_inicio)
+    #print(control["geograficas"])
+    #id_inicio = control["geograficas"][tupla_coord_inicial]
+    control['camino']= bfs.BreadhtFisrtSearch(control['malla_vial'], id_inicio)
+    return control
+    """
+    
 
 def get_data(data_structs, id):
     """
@@ -218,20 +245,50 @@ def data_size(data_structs):
     pass
 
 
-def req_1(data_structs):
+def req_1(control, estacion_inicial_lon, estacion_inicial_lat,estacion_destino_lon, estacion_destino_lat):
     """
     Función que soluciona el requerimiento 1
     """
-    # TODO: Realizar el requerimiento 1
-    pass
+    tupla_coord_inicial = (estacion_inicial_lon,estacion_inicial_lat)
+    tupla_coord_destino = (estacion_destino_lon,estacion_destino_lat)
+    
+    tabla = control["geograficas"]
+    
+    if not om.contains(tabla,tupla_coord_inicial) or not om.contains(tabla,tupla_coord_destino):
+        r = "La coordenada no existe"
+        
+    else:
+        id_inicio= me.getValue(mp.get(tabla,tupla_coord_inicial))
+        id_destino = me.getValue(mp.get(tabla,tupla_coord_destino))
+        control['camino']= bfs.BreadhtFisrtSearch(control['malla_vial'], id_inicio)
+        path = bfs.pathTo(control['camino'], id_destino)
+        r = path
+    return r
 
 
-def req_2(data_structs):
+
+def req_2(control, estacion_inicial_lon, estacion_inicial_lat,estacion_destino_lon, estacion_destino_lat ):
     """
     Función que soluciona el requerimiento 2
     """
     # TODO: Realizar el requerimiento 2
-    pass
+    tupla_coord_inicial = (estacion_inicial_lon,estacion_inicial_lat)
+    tupla_coord_destino = (estacion_destino_lon,estacion_destino_lat)
+    
+    tabla = control["geograficas"]
+
+    if not om.contains(tabla,tupla_coord_inicial) or not om.contains(tabla,tupla_coord_destino):
+        r = "La coordenada no existe"
+
+    else:
+        id_inicio= me.getValue(mp.get(tabla,tupla_coord_inicial))
+        print(id_inicio)
+        id_destino = me.getValue(mp.get(tabla,tupla_coord_destino))
+        control['camino_min']= djk.Dijkstra(control['malla_vial'], id_inicio)
+        path = bfs.pathTo(control['camino_min'], id_destino)
+        r = path
+    return r
+    
 
 
 def req_3(data_structs):

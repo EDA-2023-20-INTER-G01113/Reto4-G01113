@@ -62,6 +62,7 @@ def print_menu():
     print("7- Ejecutar Requerimiento 6")
     print("8- Ejecutar Requerimiento 7")
     print("9- Ejecutar Requerimiento 8")
+    print("10- Ejecutar buscar camino (antes del requerimiento 1)")
     print("0- Salir")
 
 
@@ -83,21 +84,21 @@ def print_data(control, id):
     #TODO: Realizar la función para imprimir un elemento
     pass
 
-def print_req_1(control):
+def print_req_1(control, estacion_inicial_lon, estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat):
     """
         Función que imprime la solución del Requerimiento 1 en consola
     """
 
     # TODO: Imprimir el resultado del requerimiento 1
-    pass
+    controller.req_1(control, estacion_inicial_lon,estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat)
 
 
-def print_req_2(control):
+def print_req_2(control, estacion_inicial_lon,estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat):
     """
         Función que imprime la solución del Requerimiento 2 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 2
-    pass
+    controller.req_2(control, estacion_inicial_lon,estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat)
 
 
 def print_req_3(control):
@@ -247,11 +248,19 @@ if __name__ == "__main__":
         if int(inputs) == 1:
             print("Cargando información de los archivos ....\n")
             data = load_data(control)
-        elif int(inputs) == 2:
-            print_req_1(control)
-
+        elif int(inputs) == 2:     
+            estacion_inicial_lon = float(input("Ingrese la longitud de la estacion origen: "))
+            estacion_inicial_lat = float(input("Ingrese la latitud de la estacion de origen: "))
+            estacion_destino_lon = float(input("Ingrese la longitud de la estacion destino: "))
+            estacion_destino_lat = float(input("Ingrese la latitud de la estacion destino: "))
+            print_req_1(control, estacion_inicial_lon, estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat)
+            
         elif int(inputs) == 3:
-            print_req_2(control)
+            estacion_inicial_lon = -74.06132772000001#float(input("Ingrese la longitud de la estacion origen: "))
+            estacion_inicial_lat = 4.716416340000023#float(input("Ingrese la latitud de la estacion de origen: "))
+            estacion_destino_lon = -74.08951416000002#float(input("Ingrese la longitud de la estacion destino: "))
+            estacion_destino_lat = 4.744766000000026#float(input("Ingrese la latitud de la estacion destino: "))
+            print_req_2(control, estacion_inicial_lon, estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat)
 
         elif int(inputs) == 4:
             print_req_3(control)

@@ -97,20 +97,20 @@ def get_data(control, id):
     pass
 
 
-def req_1(control):
+def req_1(control, estacion_inicial_lon, estacion_inicial_lat,estacion_destino_lon, estacion_destino_lat):
     """
     Retorna el resultado del requerimiento 1
     """
     # TODO: Modificar el requerimiento 1
-    pass
+    return model.req_1(control, estacion_inicial_lon, estacion_inicial_lat,estacion_destino_lon, estacion_destino_lat)
 
 
-def req_2(control):
+def req_2(control,estacion_inicial_lon, estacion_inicial_lat,estacion_destino_lon, estacion_destino_lat):
     """
     Retorna el resultado del requerimiento 2
     """
     # TODO: Modificar el requerimiento 2
-    pass
+    return model.req_2(control,estacion_inicial_lon, estacion_inicial_lat,estacion_destino_lon, estacion_destino_lat) 
 
 
 def req_3(control):
