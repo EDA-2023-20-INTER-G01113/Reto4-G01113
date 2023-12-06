@@ -108,16 +108,22 @@ def req_1(control, estacion_inicial_lon, estacion_inicial_lat,estacion_destino_l
     Retorna el resultado del requerimiento 1
     """
     # TODO: Modificar el requerimiento 1
-    return model.req_1(control, estacion_inicial_lon, estacion_inicial_lat,estacion_destino_lon, estacion_destino_lat)
-
+    start_time = get_time()
+    distancia,path = model.req_1(control, estacion_inicial_lon, estacion_inicial_lat,estacion_destino_lon, estacion_destino_lat)
+    end_time = get_time()
+    delta_times = delta_time(start_time, end_time)
+    return distancia,path, delta_times
 
 def req_2(control,estacion_inicial_lon, estacion_inicial_lat,estacion_destino_lon, estacion_destino_lat):
     """
     Retorna el resultado del requerimiento 2
     """
     # TODO: Modificar el requerimiento 2
-    return model.req_2(control,estacion_inicial_lon, estacion_inicial_lat,estacion_destino_lon, estacion_destino_lat) 
-
+    start_time = get_time()
+    distancia, path= model.req_2(control,estacion_inicial_lon, estacion_inicial_lat,estacion_destino_lon, estacion_destino_lat) 
+    end_time = get_time()
+    delta_times = delta_time(start_time, end_time)
+    return distancia, path, delta_times
 
 def req_3(control,num,localidad):
     """

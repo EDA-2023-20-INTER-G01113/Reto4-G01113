@@ -285,6 +285,23 @@ def data_size(data_structs):
     #TODO: Crear la función para obtener el tamaño de una lista
     pass
 
+def calcular_distancia_min(control, tupla_coord):
+    #print(control.keys())
+    tabla = control['geograficas']
+    lst_tabla_key = mp.keySet(tabla)
+    arbol_distancias = om.newMap(omaptype='BST',cmpfunction=compare_distancia_min)
+    
+    for cada in lt.iterator(lst_tabla_key):
+        coord_2 = cada
+        #print(coord_2)
+        distancia = haversine(tupla_coord,coord_2,unit=Unit.KILOMETERS, normalize=False, check=True)
+        mp.put(arbol_distancias, distancia, coord_2)
+    
+    distancia_min = om.minKey(arbol_distancias)
+    k_v_distancia_min = om.get(arbol_distancias,distancia_min)
+    coordenada_aprox = me.getValue(k_v_distancia_min)
+    
+    return coordenada_aprox
 
 def req_1(control, estacion_inicial_lon, estacion_inicial_lat,estacion_destino_lon, estacion_destino_lat):
     """
@@ -295,16 +312,26 @@ def req_1(control, estacion_inicial_lon, estacion_inicial_lat,estacion_destino_l
     
     tabla = control["geograficas"]
     
-    if not om.contains(tabla,tupla_coord_inicial) or not om.contains(tabla,tupla_coord_destino):
-        r = "La coordenada no existe"
-        
+    #id_ruta_final = lt.newList("ARRAY_LIST")
+    if not om.contains(tabla,tupla_coord_inicial):
+        aprox_inicial = calcular_distancia_min(control,tupla_coord_inicial)        
+        id_inicio= me.getValue(mp.get(tabla,aprox_inicial))
+        distancia = haversine(aprox_inicial,tupla_coord_destino,unit=Unit.KILOMETERS, normalize=False, check=True)
+    
+    if not om.contains(tabla,tupla_coord_destino):
+        aprox_destino = calcular_distancia_min(control,tupla_coord_destino)
+        id_destino = me.getValue(mp.get(tabla,aprox_destino))
+        distancia = haversine(aprox_destino,tupla_coord_inicial,unit=Unit.KILOMETERS, normalize=False, check=True)
+                
     else:
         id_inicio= me.getValue(mp.get(tabla,tupla_coord_inicial))
         id_destino = me.getValue(mp.get(tabla,tupla_coord_destino))
-        control['camino']= bfs.BreadhtFisrtSearch(control['malla_vial'], id_inicio)
-        path = bfs.pathTo(control['camino'], id_destino)
-        r = path
-    return r
+        distancia = haversine(tupla_coord_inicial,tupla_coord_destino,unit=Unit.KILOMETERS, normalize=False, check=True)
+    #for cada in lt.iterator(id_ruta_final):
+    control['camino']= dfs.DepthFirstSearch(control['malla_vial'], id_inicio)
+    path = dfs.pathTo(control['camino'], id_destino)
+    
+    return distancia, path
 
 
 
@@ -318,17 +345,25 @@ def req_2(control, estacion_inicial_lon, estacion_inicial_lat,estacion_destino_l
     
     tabla = control["geograficas"]
 
-    if not om.contains(tabla,tupla_coord_inicial) or not om.contains(tabla,tupla_coord_destino):
-        r = "La coordenada no existe"
+    if not om.contains(tabla,tupla_coord_inicial):
+        aprox_inicial = calcular_distancia_min(control,tupla_coord_inicial)        
+        id_inicio= me.getValue(mp.get(tabla,aprox_inicial))
+        distancia = haversine(aprox_inicial,tupla_coord_destino,unit=Unit.KILOMETERS, normalize=False, check=True)
+    
+    if not om.contains(tabla,tupla_coord_destino):
+        aprox_destino = calcular_distancia_min(control,tupla_coord_destino)
+        id_destino = me.getValue(mp.get(tabla,aprox_destino))
+        distancia = haversine(aprox_destino,tupla_coord_inicial,unit=Unit.KILOMETERS, normalize=False, check=True)
 
     else:
         id_inicio= me.getValue(mp.get(tabla,tupla_coord_inicial))
-        print(id_inicio)
         id_destino = me.getValue(mp.get(tabla,tupla_coord_destino))
-        control['camino_min']= bfs.BreathFirstSearch(control['malla_vial'], id_inicio)
-        path = bfs.pathTo(control['camino_min'], id_destino)
-        r = path
-    return r
+        distancia = haversine(tupla_coord_inicial,tupla_coord_destino,unit=Unit.KILOMETERS, normalize=False, check=True)
+        
+    control['camino_min']= bfs.BreadhtFisrtSearch(control['malla_vial'], id_inicio)
+    path = bfs.pathTo(control['camino_min'], id_destino)
+    
+    return distancia, path
     
 
 
@@ -712,7 +747,15 @@ def sort_criteria_lat_long(data_1, data_2):
         return True
     return False
 
-
+def compare_distancia_min(data_1,data_2):
+    
+    if data_1 > data_2:
+        return 1
+    elif data_1 == data_2:
+        return 0
+    else:
+        return -1
+    
 def sort_lat_long(data_structs):
     """
     Función encargada de ordenar la lista con los datos

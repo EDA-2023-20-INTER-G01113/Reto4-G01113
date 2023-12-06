@@ -102,16 +102,38 @@ def print_req_1(control, estacion_inicial_lon, estacion_inicial_lat, estacion_de
     """
 
     # TODO: Imprimir el resultado del requerimiento 1
-    controller.req_1(control, estacion_inicial_lon,estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat)
-
+    distancia, path, delta_times= controller.req_1(control, estacion_inicial_lon, estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat)
+    if path is not None:
+        size = st.size(path)
+        print(f'El camino tiene una longitud de: {size}')
+        print(f"La distancia entre las dos coordenadas: {distancia}")
+        print(f'Tiempo transcurrido: {delta_times} ms.')
+        print("IDs de los nodos incluidos: ")
+        while size>0:
+            elem = st.pop(path)
+            print(elem)
+            size-=1
+    else:
+        print('No hay camino')
 
 def print_req_2(control, estacion_inicial_lon,estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat):
     """
         Función que imprime la solución del Requerimiento 2 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 2
-    controller.req_2(control, estacion_inicial_lon,estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat)
-
+    distancia, path, delta_times = controller.req_1(control, estacion_inicial_lon, estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat)
+    if path is not None:
+        size = st.size(path)
+        print(f'El camino tiene una longitud de: {size}')
+        print(f"La distancia entre las dos coordenadas: {distancia}")
+        print(f'Tiempo transcurrido: {delta_times} ms.')
+        print("IDs de los nodos incluidos: ")
+        while size>0:
+            elem = st.pop(path)
+            print(elem)
+            size-=1
+    else:
+        print('No hay camino')
 
 def print_req_3(control,num,localidad):
     """
