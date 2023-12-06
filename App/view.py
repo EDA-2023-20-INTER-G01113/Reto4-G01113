@@ -139,11 +139,11 @@ def print_req_2(control, estacion_inicial_lon,estacion_inicial_lat, estacion_des
     else:
         print('No hay camino')
 
-def print_req_3(control,num,localidad):
+def print_req_3(control,num,localidad,memoria):
     """
         Función que imprime la solución del Requerimiento 3 en consola
     """
-    total,vertices,arcos,kilometros,costo,delta_times,meria=controller.req_3(control,num,localidad)
+    total,vertices,arcos,kilometros,costo,delta_times,meria=controller.req_3(control,num,localidad,memoria)
     print("El tiempo de ejecución fue de :"+str(delta_times))
     print("El total de vertices en la red es de: "+str(total))
     print("Los vertices incluidos son: "+str(vertices))
@@ -308,7 +308,7 @@ def thread_cycle():
                 camaras= int(input("Ingrese el número de camaras que desea instalar: "))
                 localidad= input("Ingrese la localidad: ")
                 memoria= input("Desea saber la memoria:")
-                print_req_3(control, camaras, localidad)
+                print_req_3(control, camaras, localidad,memoria)
 
         elif int(inputs) == 5:
                 print_req_4(control)
