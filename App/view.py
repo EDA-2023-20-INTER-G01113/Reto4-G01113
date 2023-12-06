@@ -32,6 +32,7 @@ from DISClib.DataStructures import mapentry as me
 assert cf
 from tabulate import tabulate
 import traceback
+import threading
 
 """
 La vista se encarga de la interacción con el usuario
@@ -62,7 +63,6 @@ def print_menu():
     print("7- Ejecutar Requerimiento 6")
     print("8- Ejecutar Requerimiento 7")
     print("9- Ejecutar Requerimiento 8")
-    print("10- Ejecutar buscar camino (antes del requerimiento 1)")
     print("0- Salir")
 
 
@@ -109,10 +109,12 @@ def print_req_1(control, estacion_inicial_lon, estacion_inicial_lat, estacion_de
         print(f"La distancia entre las dos coordenadas: {distancia}")
         print(f'Tiempo transcurrido: {delta_times} ms.')
         print("IDs de los nodos incluidos: ")
+        response = ''
         while size>0:
             elem = st.pop(path)
-            print(elem)
+            response+=f'{elem}, '
             size-=1
+        print(response.strip()[:-1])
     else:
         print('No hay camino')
 
@@ -128,10 +130,12 @@ def print_req_2(control, estacion_inicial_lon,estacion_inicial_lat, estacion_des
         print(f"La distancia entre las dos coordenadas: {distancia}")
         print(f'Tiempo transcurrido: {delta_times} ms.')
         print("IDs de los nodos incluidos: ")
+        response=''
         while size>0:
             elem = st.pop(path)
-            print(elem)
+            response+=f'{elem}, '
             size-=1
+        print(response.strip()[:-1])
     else:
         print('No hay camino')
 
@@ -277,12 +281,8 @@ def print_req_8(control):
 control = new_controller()
 
 # main del reto
-if __name__ == "__main__":
-    """
-    Menu principal
-    """
-    working = True
-    #ciclo del menu
+def thread_cycle():
+    working= True
     while working:
         print_menu()
         inputs = input('Seleccione una opción para continuar\n')
@@ -290,43 +290,54 @@ if __name__ == "__main__":
             print("Cargando información de los archivos ....\n")
             data = load_data(control)
         elif int(inputs) == 2:     
-            estacion_inicial_lon = float(input("Ingrese la longitud de la estacion origen: "))
-            estacion_inicial_lat = float(input("Ingrese la latitud de la estacion de origen: "))
-            estacion_destino_lon = float(input("Ingrese la longitud de la estacion destino: "))
-            estacion_destino_lat = float(input("Ingrese la latitud de la estacion destino: "))
-            print_req_1(control, estacion_inicial_lon, estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat)
+                estacion_inicial_lon = float(input("Ingrese la longitud de la estacion origen: "))
+                estacion_inicial_lat = float(input("Ingrese la latitud de la estacion de origen: "))
+                estacion_destino_lon = float(input("Ingrese la longitud de la estacion destino: "))
+                estacion_destino_lat = float(input("Ingrese la latitud de la estacion destino: "))
+                print_req_1(control, estacion_inicial_lon, estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat)
             
         elif int(inputs) == 3:
-            estacion_inicial_lon = -74.06132772000001#float(input("Ingrese la longitud de la estacion origen: "))
-            estacion_inicial_lat = 4.716416340000023#float(input("Ingrese la latitud de la estacion de origen: "))
-            estacion_destino_lon = -74.08951416000002#float(input("Ingrese la longitud de la estacion destino: "))
-            estacion_destino_lat = 4.744766000000026#float(input("Ingrese la latitud de la estacion destino: "))
-            print_req_2(control, estacion_inicial_lon, estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat)
+                estacion_inicial_lon = float(input("Ingrese la longitud de la estacion origen: "))
+                estacion_inicial_lat = float(input("Ingrese la latitud de la estacion de origen: "))
+                estacion_destino_lon = float(input("Ingrese la longitud de la estacion destino: "))
+                estacion_destino_lat = float(input("Ingrese la latitud de la estacion destino: "))
+                print_req_2(control, estacion_inicial_lon, estacion_inicial_lat, estacion_destino_lon, estacion_destino_lat)
 
         elif int(inputs) == 4:
-            camaras= int(input("Ingrese el número de camaras que desea instalar: "))
-            localidad= input("Ingrese la localidad: ")
-            print_req_3(control,camaras,localidad)
+                camaras= int(input("Ingrese el número de camaras que desea instalar: "))
+                localidad= input("Ingrese la localidad: ")
+                print_req_3(control, camaras, localidad)
 
         elif int(inputs) == 5:
-            print_req_4(control)
+                print_req_4(control)
 
         elif int(inputs) == 6:
-            print_req_5(control)
+                cant_camaras= 10#int(input("Ingrese la cantidad de camaras que desea comparar: "))
+                tipo_vehiculo = "monotocicleta"#str(input("Ingrese el tipo de vehiculo que desea consultar: "))
+                print_req_5(control, cant_camaras, tipo_vehiculo)
 
         elif int(inputs) == 7:
-            print_req_6(control)
+                print_req_6(control)
 
         elif int(inputs) == 8:
-            print_req_7(control)
+                print_req_7(control)
 
         elif int(inputs) == 9:
-            print_req_8(control)
+                print_req_8(control)
 
         elif int(inputs) == 0:
-            working = False
-            print("\nGracias por utilizar el programa")
+                working = False
+                print("\nGracias por utilizar el programa")
             
         else:
-            print("Opción errónea, vuelva a elegir.\n")
+                print("Opción errónea, vuelva a elegir.\n")
     sys.exit(0)
+
+if __name__ == "__main__":
+        """
+        Menu principal
+        """
+        threading.stack_size(67108864)
+        sys.setrecursionlimit(2 ** 20)
+        thread = threading.Thread(target=thread_cycle)
+        thread.start()
