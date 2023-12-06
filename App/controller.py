@@ -125,15 +125,25 @@ def req_2(control,estacion_inicial_lon, estacion_inicial_lat,estacion_destino_lo
     delta_times = delta_time(start_time, end_time)
     return distancia, path, delta_times
 
-def req_3(control,num,localidad):
+def req_3(control,num,localidad,memoria):
     """
     Retorna el resultado del requerimiento 3
     """
     start_time = get_time()
+    if memoria:
+        tracemalloc.start()
+        start_memory = get_memory() 
     total,vertices_fin,arcos,kilometros,costo=model.req_3_auxiliar(control,localidad,num)
+    if memoria:
+        stop_memory = get_memory()
+        tracemalloc.stop()
+        delta_m = delta_memory(stop_memory, start_memory)
+    else:
+        delta_m = None
+
     end_time = get_time()
     delta_times = delta_time(start_time, end_time)
-    return total,vertices_fin,arcos,kilometros,costo,delta_times
+    return total,vertices_fin,arcos,kilometros,costo,delta_times,delta_m
 
     # TODO: Modificar el requerimiento 3
     pass
